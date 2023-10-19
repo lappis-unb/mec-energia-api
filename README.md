@@ -1,3 +1,5 @@
+https://gitlab.com/knz13/mec-energia-api/badges/feat/adding-test-coverage-badge/coverage.svg
+
 # MEC-Energia API
 
 Este repositório contém a implementação da API do sistema MEC-Energia.
