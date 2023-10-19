@@ -1,4 +1,4 @@
-https://gitlab.com/knz13/mec-energia-api/badges/feat/adding-test-coverage-badge/coverage.svg
+![Coverage Testes](https://gitlab.com/knz13/mec-energia-api/badges/feat/adding-test-coverage-badge/coverage.svg)
 
 # MEC-Energia API
 
