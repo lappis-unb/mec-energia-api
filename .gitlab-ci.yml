@@ -70,6 +70,7 @@ lint:
 unit-test:
   stage: test
   extends: .base-python
+  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   script:
     - python -m pytest
   after_script:
