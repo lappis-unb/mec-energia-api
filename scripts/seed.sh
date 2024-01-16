@@ -1,3 +1,4 @@
 #!/bin/bash
 
-cat scripts/seed.py | ./manage.py shell
+source scripts/create-superuser.sh
+source scripts/seed_demo.sh
