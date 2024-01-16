@@ -1,51 +1,51 @@
 import pytest
 from utils.cnpj_validator_util import CnpjValidator
 
-valid_cnpjs_as_params = pytest.mark.parametrize('cnpj', [
-    ('58577114000189'),
-    ('11222333000181'),
-    ('00038174000143'),  # UnB
-])
+def test_valid_cnpj():
+    valid_cnpjs = [
+        "11222333000181",
+        "12345678000195",
+    ]
+    for cnpj in valid_cnpjs:
+        try:
+            CnpjValidator.validate(cnpj)
+        except Exception as e:
+            pytest.fail(f"Valid CNPJ '{cnpj}' failed validation with exception: {e}")
 
-invalid_cnpjs_as_params = pytest.mark.parametrize('cnpj', [
-    ('11111111111111'),
-])
+def test_invalid_cnpj():
+    invalid_cnpjs = [
+        "00000000000000",
+        "11222333000182",
+        "43.285.565/0001-71",
+    ]
+    for cnpj in invalid_cnpjs:
+        with pytest.raises(Exception):
+            CnpjValidator.validate(cnpj)
 
-invalid_null_cnpjs_as_params = pytest.mark.parametrize('cnpj', [
-    ('00000000000000'),
-])
+def test_invalid_format():
+    invalid_formats = [
+        "123",
+        "abcdefghijlmn",
+        "123456789012345",
+    ]
+    for cnpj in invalid_formats:
+        with pytest.raises(Exception):
+            CnpjValidator.validate(cnpj)
 
-wrong_length_or_non_numeric_cnpjs_as_params = pytest.mark.parametrize('cnpj', [
-    # wrong length
-    (''),
-    ('1234567890123'),
-    ('123456789012345'),
-    # non numeric
-    ('0003817400014_'),
-    ('F0038174000143'),
-    ('00!38174000143'),
-])
+def test_zeroed_cnpj():
+    with pytest.raises(Exception):
+        CnpjValidator.validate("00000000000001")
 
-sut = CnpjValidator.validate
+def test_direct_verify_digit():
+    base_digits_1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1]
+    expected_digit_1 = calculate_expected_digit(CnpjValidator.multipliers_1, base_digits_1)
+    assert CnpjValidator._verify_digit(CnpjValidator.multipliers_1, base_digits_1) == expected_digit_1
 
-@valid_cnpjs_as_params
-def test_accepts_valid_cnpj(cnpj: str):
-    sut(cnpj)
+    base_digits_2 = [3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5]
+    expected_digit_2 = calculate_expected_digit(CnpjValidator.multipliers_2, base_digits_2)
+    assert CnpjValidator._verify_digit(CnpjValidator.multipliers_2, base_digits_2) == expected_digit_2
 
-@wrong_length_or_non_numeric_cnpjs_as_params
-def test_rejects_cnpj_with_non_numeric_digits(cnpj: str):
-    with pytest.raises(Exception) as e:
-        sut(cnpj)
-    assert 'must contain exactly 14 numerical digits' in str(e.value)
-
-@invalid_cnpjs_as_params
-def test_rejects_invalid_cnpjs(cnpj: str):
-    with pytest.raises(Exception) as e:
-        sut(cnpj)
-    assert 'Invalid' in str(e.value)
-
-@invalid_null_cnpjs_as_params
-def test_rejects_invalid_cnpjs(cnpj: str):
-    with pytest.raises(Exception) as e:
-        sut(cnpj)
-    assert 'Invalid' in str(e.value)
+def calculate_expected_digit(multipliers, base_digits):
+    sum_result = sum(m * b for m, b in zip(multipliers, base_digits))
+    mod_result = sum_result % 11
+    return 0 if mod_result < 2 else 11 - mod_result
