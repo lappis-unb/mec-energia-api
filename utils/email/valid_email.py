@@ -1,18 +1,11 @@
-import re
-import requests
+from email_validator import validate_email, EmailNotValidError
 
 def verify_email_is_valid(email):
-    regex = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
-
-    if not (re.search(regex,email)):  
-        raise Exception('Email not valid')
-
-    """ endpoint = 'https://www.verifyemailaddress.org/email-validation/result/'
-    data = {
-        'email': email
-    }
-
-    response = requests.post(endpoint, data)
-    """
+    try:
+        # Validar o e-mail
+        validate_email(email, check_deliverability=True).normalized
+    except EmailNotValidError as e:
+        # O e-mail não é válido, levantar exceção
+        raise Exception(f'Email not valid: {e}')
 
     return True
