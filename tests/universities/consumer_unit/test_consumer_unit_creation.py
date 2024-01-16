@@ -39,3 +39,17 @@ class TestConsumerUnitsEndpoint:
         assert response.status_code == status.HTTP_201_CREATED
         assert created_consumer_unit['name'] == self.consumer_unit_to_be_created['name']
         assert created_consumer_unit['university'] == self.consumer_unit_to_be_created['university']
+    
+    def test_create_consumer_unit_with_invalid_data(self):
+        invalid_consumer_unit_data = {
+            'code': '111111',
+            'created_on': '20-10-0222',
+            'is_active': True,
+            'university': self.university.id
+        }
+
+        response = self.client.post(ENDPOINT, invalid_consumer_unit_data)
+        response_data = json.loads(response.content)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'name' in response_data.keys()  # Verifica se há um erro relacionado ao campo 'name'
