@@ -3,6 +3,8 @@ from rest_framework.test import APIClient
 
 from contracts.models import Contract
 
+from utils.subgroup_util import Subgroup
+
 from tests.test_utils import dicts_test_utils
 from tests.test_utils import create_objects_test_utils
 
@@ -34,6 +36,11 @@ class TestContractSubGroup:
         self.contract_test_2 = create_objects_test_utils.create_test_contract(self.contract_test_2_dict, self.distributor, self.consumer_unit_test)
         self.contract_test_3 = create_objects_test_utils.create_test_contract(self.contract_test_3_dict, self.distributor, self.consumer_unit_test)
 
+        self.contract_test_supply_voltage_1 = -1 # CT1
+        self.contract_test_supply_voltage_2 = 69 # CT2
+        self.contract_test_supply_voltage_3 = 230  # CT3
+        self.contract_test_supply_voltage_4 = 70  # CT4
+
 
     def test_read_contract_subgroup_A3(self):
         assert self.contract_test_3.supply_voltage == 69
@@ -61,3 +68,19 @@ class TestContractSubGroup:
         
         assert 'Subgroup not found' in str(e.value)
         assert 3 == Contract.objects.all().count()
+
+    def test_throws_exception_when_suply_voltage_below_minimum(self):
+        with pytest.raises(Exception) as e:
+            Subgroup.get_subgroup(self.contract_test_supply_voltage_1)
+        assert 'Subgroup not found' in str(e.value)
+
+    def test_get_group_minimum_and_maximum_equal(self):
+        assert Subgroup.get_subgroup(self.contract_test_supply_voltage_2) == Subgroup.A3
+
+    def test_get_group_without_maximum_voltage(self):
+        assert Subgroup.get_subgroup(self.contract_test_supply_voltage_3) == Subgroup.A1
+
+    def test_throws_exception_when_suply_voltage_does_not_match_ranges(self):
+        with pytest.raises(Exception) as e:
+            Subgroup.get_subgroup(self.contract_test_supply_voltage_4)
+        assert 'Subgroup not found' in str(e.value)
