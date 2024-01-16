@@ -34,6 +34,12 @@ consumer_unit_dict_3 = {
     'is_active': True,
 }
 
+consumer_unit_dict_4 = {
+    'name': 'Faculdade de Planaltina',
+    'code': '222222222',
+    'is_active': True,
+}
+
 # ---------------------------------------
 # Contrato
 
@@ -83,6 +89,23 @@ contract_dict_6 = {
     'supply_voltage': 100.00,
     'peak_contracted_demand_in_kw': 100.00,
     'off_peak_contracted_demand_in_kw': 100.00,
+}
+
+contract_dict_7 = {
+    'start_date': date(year=2051, month = 1, day = 1),
+    'tariff_flag': 'V',
+    'supply_voltage': 100.00,
+    'peak_contracted_demand_in_kw': 250.00,
+    'off_peak_contracted_demand_in_kw': 250.00,
+}
+
+contract_dict_8 = {
+    'end_date': date(year=2053, month = 1, day = 1),
+    'start_date': date(year=2052, month = 1, day = 1),
+    'tariff_flag': 'V',
+    'supply_voltage': 100.00,
+    'peak_contracted_demand_in_kw': 250.00,
+    'off_peak_contracted_demand_in_kw': 250.00,
 }
 
 # ---------------------------------------
