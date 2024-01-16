@@ -6,6 +6,11 @@ from tests.test_utils import dicts_test_utils
 from users import models
 
 
+def test_get_user_type():
+    with pytest.raises(Exception, match=r'User type \(\w+\) does not exist'):
+        UserType.get_user_type('some_user_type')
+
+
 def test_raise_exeception_for_invalid_user_type():
     # CT1
     invalid_user_type = 'invalid'
