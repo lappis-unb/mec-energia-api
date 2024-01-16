@@ -24,6 +24,9 @@ class TestContractEndpoint:
 
         self.consumer_unit_test_dict = dicts_test_utils.consumer_unit_dict_1
         self.consumer_unit_test = create_objects_test_utils.create_test_consumer_unit(self.consumer_unit_test_dict, self.university)
+
+        self.consumer_unit_test_dict_without_contract = dicts_test_utils.consumer_unit_dict_4
+        self.consumer_unit_test_without_contract = create_objects_test_utils.create_test_consumer_unit(self.consumer_unit_test_dict_without_contract, self.university)
         
         self.distributor_dict = dicts_test_utils.distributor_dict_1
         self.distributor = create_objects_test_utils.create_test_distributor(self.distributor_dict, self.university)
@@ -32,11 +35,13 @@ class TestContractEndpoint:
         self.contract_test_2_dict = dicts_test_utils.contract_dict_2
         self.contract_test_3_dict = dicts_test_utils.contract_dict_3
         self.contract_test_4_dict = dicts_test_utils.contract_dict_4
+        self.contract_test_5_dict = dicts_test_utils.contract_dict_4
 
         self.contract_test_1 = create_objects_test_utils.create_test_contract(self.contract_test_1_dict, self.distributor, self.consumer_unit_test)
         self.contract_test_2 = create_objects_test_utils.create_test_contract(self.contract_test_2_dict, self.distributor, self.consumer_unit_test)
         self.contract_test_3 = create_objects_test_utils.create_test_contract(self.contract_test_3_dict, self.distributor, self.consumer_unit_test)
         self.contract_test_4 = create_objects_test_utils.create_test_contract(self.contract_test_4_dict, self.distributor, self.consumer_unit_test)
+        self.contract_test_5 = create_objects_test_utils.create_test_contract(self.contract_test_5_dict, self.distributor, self.consumer_unit_test)
 
 
     def test_create_contract_and_set_last_contract_end_date_1(self):
@@ -66,3 +71,15 @@ class TestContractEndpoint:
             create_objects_test_utils.create_test_contract(contract_test_6_dict, self.distributor, self.consumer_unit_test)
 
         assert 'Already have the contract in this date' in str(e.value)
+
+    def test_contract_with_valid_start_date(self):
+        teste = create_objects_test_utils.create_test_contract(dicts_test_utils.contract_dict_7, self.distributor, self.consumer_unit_test)
+        assert teste.check_start_date_is_valid() is None
+
+    def test_contract_with_end_date(self):
+        teste = create_objects_test_utils.create_test_contract(dicts_test_utils.contract_dict_8, self.distributor, self.consumer_unit_test)
+        assert teste.check_start_date_is_valid() is None
+
+    def test_consumer_unit_without_contract(self):
+        teste = create_objects_test_utils.create_test_contract(dicts_test_utils.contract_dict_7, self.distributor, self.consumer_unit_test_without_contract)
+        assert teste.check_start_date_is_valid() is None
