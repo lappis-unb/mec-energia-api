@@ -9,20 +9,16 @@ ao banco de dados.
 
 Vamos passar por alguns comandos básicos.
 
-Para executar **todos** os testes, execute simplesmente:
+Para executar **todos** os testes, dentro do container, execute simplesmente:
 
 ```sh
-pytest
+docker exec mec-energia-api bash -c "python -m pytest"
 ```
-
-Dependendo da [configuração do seu ambiente](./ambiente-desenvolvimento.md), 
-pode ser que o pytest não seja reconhecido. Neste caso, tente `python -m pytest`.
-Nesta documentação daqui pra frente, para ser mais breve, será usado `pytest`.
 
 Para executar alguns casos de teste específicos segundo uma expressão, execute:
 
 ```sh
-pytest -k <expressao>
+docker exec mec-energia-api bash -c "python -m pytest -k <expressao>
 ```
 
 `<expressao>` é uma string que deve combinar com parte do nome de algum 
@@ -30,17 +26,8 @@ arquivo, caso ou método/função de teste. Para rodar os testes de endpoint de
 tarifa, por exemplo, você poderia usar
 
 ```sh
-pytest -k tariffs_endpoint
+docker exec mec-energia-api bash -c "python -m pytest -k tariffs_endpoint
 ```
-
-Veja como esses nome são gerados pelo Pytest com 
-
-```
-pytest --collect-only
-```
-
-Leia mais sobre isso em 
-"[using -k expr to select tests](https://docs.pytest.org/en/latest/example/markers.html#using-k-expr-to-select-tests-based-on-their-name)".
 
 Além disso, ainda é possível selecionar um dado de entrada específico para um caso
 de teste parametrizado. Observe `tests/test_cnpj_validator.py`. Para testar
