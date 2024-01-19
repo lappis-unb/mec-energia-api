@@ -113,6 +113,14 @@ class Contract(models.Model):
 
 
 class EnergyBill(models.Model):
+    def save(self, *args, **kwargs):
+        if self.date > datetime.date.today():
+            raise Exception("Energy Bill date cannot be greater than current date.")
+
+        if self.date < self.contract.start_date:
+            raise Exception("Energy Bill date cannot be earlier than the contract start date.")
+
+        super().save(*args, **kwargs)
 
     contract = models.ForeignKey(
         'Contract',
