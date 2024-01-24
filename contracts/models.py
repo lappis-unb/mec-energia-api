@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
-import datetime
+from datetime import date, datetime
 
 from utils.subgroup_util import Subgroup
 from utils.date_util import DateUtils
@@ -43,7 +43,7 @@ class Contract(models.Model):
     )
 
     start_date = models.DateField(
-        default=datetime.date.today,
+        default=date.today,
         null=False,
         blank=False
     )
@@ -114,12 +114,19 @@ class Contract(models.Model):
 
 class EnergyBill(models.Model):
     def save(self, *args, **kwargs):
-        if self.date > datetime.date.today():
+        if not isinstance(self.date, date):
+            try:    
+                self.date = datetime.strptime(self.date, '%Y-%m-%d').date()
+            except ValueError:
+                raise ValueError("Invalid date format. Please use 'YYYY-MM-DD'.")
+
+        if self.date > date.today():
             raise Exception("Energy Bill date cannot be greater than current date.")
 
-        if self.date < self.contract.start_date:
+        # Posso inserir uma conta de luz com a data anterior a do contrato?
+        """ if self.date < self.contract.start_date:
             raise Exception("Energy Bill date cannot be earlier than the contract start date.")
-
+        """
         super().save(*args, **kwargs)
 
     contract = models.ForeignKey(
