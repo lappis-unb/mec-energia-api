@@ -132,6 +132,9 @@ class RecommendationViewSet(ViewSet):
         consumption_history.peak_exceeded_in_kw = (consumption_history.peak_measured_demand_in_kw - consumption_history.contract_peak_demand_in_kw).clip(.0)
         consumption_history.off_peak_exceeded_in_kw = (consumption_history.off_peak_measured_demand_in_kw - consumption_history.contract_off_peak_demand_in_kw).clip(.0)
 
+        if((consumption_history.peak_measured_demand_in_kw == 0).all()):
+            consumption_history.peak_measured_demand_in_kw = consumption_history.off_peak_measured_demand_in_kw
+
         pending_bills_dates = [f"{b['year']}-{b['month']}-01" for b in pending_bills]
         return (consumption_history, pending_bills_dates)
 
