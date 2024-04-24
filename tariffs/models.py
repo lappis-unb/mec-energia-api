@@ -228,43 +228,43 @@ class Tariff(models.Model):
 
     peak_tusd_in_reais_per_kw = models.DecimalField(
         decimal_places=2,
-        max_digits=10,
+        max_digits=6,
         null=True,
         blank=True,
     )
     peak_tusd_in_reais_per_mwh = models.DecimalField(
         decimal_places=2,
-        max_digits=10,
+        max_digits=6,
         null=True,
         blank=True,
     )
     peak_te_in_reais_per_mwh = models.DecimalField(
         decimal_places=2,
-        max_digits=10,
+        max_digits=6,
         null=True,
         blank=True,
     )
     off_peak_tusd_in_reais_per_kw = models.DecimalField(
         decimal_places=2,
-        max_digits=10,
+        max_digits=6,
         null=True,
         blank=True,
     )
     off_peak_tusd_in_reais_per_mwh = models.DecimalField(
         decimal_places=2,
-        max_digits=10,
+        max_digits=6,
         null=True,
         blank=True,
     )
     off_peak_te_in_reais_per_mwh = models.DecimalField(
         decimal_places=2,
-        max_digits=10,
+        max_digits=6,
         null=True,
         blank=True,
     )
     na_tusd_in_reais_per_kw = models.DecimalField(
         decimal_places=2,
-        max_digits=10,
+        max_digits=6,
         null=True,
         blank=True,
     )

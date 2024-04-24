@@ -10,23 +10,23 @@ from tariffs.models import Tariff
 
 
 class BlueTariffSerializer(ModelSerializer):
-    peak_tusd_in_reais_per_kw = serializers.FloatField()
-    peak_tusd_in_reais_per_mwh = serializers.FloatField()
-    peak_te_in_reais_per_mwh = serializers.FloatField()
-    off_peak_tusd_in_reais_per_kw = serializers.FloatField()
-    off_peak_tusd_in_reais_per_mwh = serializers.FloatField()
-    off_peak_te_in_reais_per_mwh = serializers.FloatField()
+    peak_tusd_in_reais_per_kw = serializers.FloatField(max_value=9999.99)
+    peak_tusd_in_reais_per_mwh = serializers.FloatField(max_value=9999.99)
+    peak_te_in_reais_per_mwh = serializers.FloatField(max_value=9999.99)
+    off_peak_tusd_in_reais_per_kw = serializers.FloatField(max_value=9999.99)
+    off_peak_tusd_in_reais_per_mwh = serializers.FloatField(max_value=9999.99)
+    off_peak_te_in_reais_per_mwh = serializers.FloatField(max_value=9999.99)
 
     class Meta:
         model = Tariff
         fields = ['peak_tusd_in_reais_per_kw','peak_tusd_in_reais_per_mwh','peak_te_in_reais_per_mwh','off_peak_tusd_in_reais_per_kw','off_peak_tusd_in_reais_per_mwh','off_peak_te_in_reais_per_mwh']
 
 class GreenTariffSerializer(ModelSerializer):
-    peak_tusd_in_reais_per_mwh = serializers.FloatField()
-    peak_te_in_reais_per_mwh = serializers.FloatField()
-    off_peak_tusd_in_reais_per_mwh = serializers.FloatField()
-    off_peak_te_in_reais_per_mwh = serializers.FloatField()
-    na_tusd_in_reais_per_kw = serializers.FloatField()
+    peak_tusd_in_reais_per_mwh = serializers.FloatField(max_value=9999.99)
+    peak_te_in_reais_per_mwh = serializers.FloatField(max_value=9999.99)
+    off_peak_tusd_in_reais_per_mwh = serializers.FloatField(max_value=9999.99)
+    off_peak_te_in_reais_per_mwh = serializers.FloatField(max_value=9999.99)
+    na_tusd_in_reais_per_kw = serializers.FloatField(max_value=9999.99)
 
     class Meta:
         model = Tariff
