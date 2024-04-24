@@ -6,7 +6,7 @@ from pandas import DataFrame
 
 from recommendation.green import GreenPercentileCalculator, GreenTariff
 from recommendation.blue import BluePercentileCalculator, BlueTariff
-from recommendation.calculator import ContractRecommendationCalculator, CONSUMPTION_HISTORY_HEADERS
+from recommendation.calculator import ContractRecommendationCalculator, RecommendationCalculator, CONSUMPTION_HISTORY_HEADERS
 
 
 B_PERCENTILES = BluePercentileCalculator.PERCENTILES
@@ -19,7 +19,7 @@ G_SUMMARY_HEADERS = GreenPercentileCalculator.SUMMARY_HEADERS
 
 RECOMENDATION_HEADERS = ContractRecommendationCalculator.HEADERS
 
-CURRENT_CONTRACT_HEADERS = ContractRecommendationCalculator.CURRENT_CONTRACT_HEADERS
+CURRENT_CONTRACT_HEADERS = RecommendationCalculator.CURRENT_CONTRACT_HEADERS
 
 SEP = '\t'
 

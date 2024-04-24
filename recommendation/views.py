@@ -49,6 +49,7 @@ class RecommendationViewSet(ViewSet):
 
         errors = []
         warnings = []
+
         is_missing_tariff = blue == None or green == None
         if is_missing_tariff:
             errors.append('Lance tarifas para análise')
@@ -71,8 +72,8 @@ class RecommendationViewSet(ViewSet):
                 f' {consumption_history_length} faturas'
             )
 
-        recommendation = None
-        if not is_missing_tariff and has_enough_energy_bills:
+        calculator = None
+        if not is_missing_tariff:
             calculator = RecommendationCalculator(
                 consumption_history=consumption_history,
                 current_tariff_flag=contract.tariff_flag,
@@ -80,14 +81,20 @@ class RecommendationViewSet(ViewSet):
                 green_tariff=green.as_green_tariff(),
             )
 
+        recommendation = None
+        current_contract = calculator.current_contract
+
+        if calculator and has_enough_energy_bills:
             recommendation = calculator.calculate()
-            fill_with_pending_dates(recommendation, consumption_history, pending_bills_dates)
+            if recommendation:
+                fill_with_pending_dates(recommendation, consumption_history, pending_bills_dates)
         else:
             # FIXME: temporário
             fill_history_with_pending_dates(consumption_history, pending_bills_dates)
 
         return build_response(
             recommendation,
+            current_contract,
             consumption_history,
             contract,
             consumer_unit,
@@ -99,6 +106,7 @@ class RecommendationViewSet(ViewSet):
         )
 
     def _get_energy_bills_as_consumption_history(self, consumer_unit: ConsumerUnit, contract: Contract):
+
         bills = consumer_unit.get_energy_bills_for_recommendation()
         pending_bills = consumer_unit.get_energy_bills_pending()
         bills_list: list[dict] = []
@@ -121,6 +129,12 @@ class RecommendationViewSet(ViewSet):
 
         bills_list.reverse()
         consumption_history = DataFrame(bills_list, columns=CONSUMPTION_HISTORY_HEADERS)
+        consumption_history.peak_exceeded_in_kw = (consumption_history.peak_measured_demand_in_kw - consumption_history.contract_peak_demand_in_kw).clip(.0)
+        consumption_history.off_peak_exceeded_in_kw = (consumption_history.off_peak_measured_demand_in_kw - consumption_history.contract_off_peak_demand_in_kw).clip(.0)
+
+        if((consumption_history.peak_measured_demand_in_kw == 0).all()):
+            consumption_history.peak_measured_demand_in_kw = consumption_history.off_peak_measured_demand_in_kw
+
         pending_bills_dates = [f"{b['year']}-{b['month']}-01" for b in pending_bills]
         return (consumption_history, pending_bills_dates)
 

@@ -42,15 +42,15 @@ def _generate_tariffs_as_table(blue_tariff: Tariff, green_tariff: Tariff):
     return tariffs_table
 
 
-def _generate_plot_demand_and_consumption_costs_in_current_contract(current_contract_recommendation: DataFrame):
-    current_demand_and_consumption_costs: DataFrame = current_contract_recommendation[[
+def _generate_plot_demand_and_consumption_costs_in_current_contract(current_contract_costs: DataFrame):
+    current_demand_and_consumption_costs: DataFrame = current_contract_costs[[
         'consumption_cost_in_reais', 'demand_cost_in_reais']]
-    return current_demand_and_consumption_costs.to_dict('list')
+    return current_demand_and_consumption_costs.to_dict('list'), current_contract_costs.consumption_cost_in_reais.sum() + current_contract_costs.demand_cost_in_reais.sum()
 
 def _generate_plot_costs_comparison(recommendation: ContractRecommendationResult):
     result = DataFrame()
-    result.insert(0, 'total_cost_in_reais_in_recommended', recommendation.frame.contract_cost_in_reais)
     result.insert(0, 'total_cost_in_reais_in_current', recommendation.current_contract.cost_in_reais)
+    result.insert(0, 'total_cost_in_reais_in_recommended', recommendation.frame.contract_cost_in_reais)
     result.insert(0, 'date', recommendation.frame.date)
 
     result.replace({nan: None}, inplace=True)
@@ -97,6 +97,7 @@ def _generate_table_contracts_comparison(recommendation: ContractRecommendationR
 
 def build_response(
     recommendation: ContractRecommendationResult,
+    current_contract: DataFrame,
     consumption_history: DataFrame,
     contract: Contract,
     consumer_unit: ConsumerUnit,
@@ -108,6 +109,7 @@ def build_response(
     ):
     '''Reponsável por APENAS construir o objeto `Response` de endpoint'''
     dates = consumption_history.date
+    current_contract_costs, current_total_cost = _generate_plot_demand_and_consumption_costs_in_current_contract(current_contract)
 
     # FIXME: refatorar
     if recommendation == None:
@@ -130,9 +132,12 @@ def build_response(
             'should_renew_contract': False,
             'consumption_history_plot': consumption_history[HEADERS_FOR_CONSUMPTION_HISTORY
               + ['contract_peak_demand_in_kw', 'contract_off_peak_demand_in_kw']].to_dict('list'),
+            'current_contract_costs_plot': current_contract_costs,
+            'current_total_cost': current_total_cost,
+
         })
 
-    current_contract_costs = _generate_plot_demand_and_consumption_costs_in_current_contract(recommendation.current_contract)
+    
     costs_comparison = _generate_plot_costs_comparison(recommendation)
 
     contracts_comparison, totals = _generate_table_contracts_comparison(recommendation)
@@ -186,5 +191,6 @@ def build_response(
         'costs_comparison_plot': costs_comparison,
         'contracts_comparison_table': contracts_comparison,
         'contracts_comparison_totals': totals,
+        'current_total_cost': current_total_cost,
     })
 
