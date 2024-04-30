@@ -77,6 +77,18 @@ class DistributorViewSet(ModelViewSet):
         ser = DistributorSerializer(distributors, many=True, context={'request': request})
         return Response(ser.data, status.HTTP_200_OK)
 
+    def retrieve(self, request, pk=None):
+        user_types_with_permission = RequestsPermissions.university_user_permissions
+        distribuidora = self.get_object()
+        
+        try:
+            RequestsPermissions.check_request_permissions(request.user, user_types_with_permission, distribuidora.university.id)
+        except Exception as error:
+            return Response({'detail': f'{error}'}, status.HTTP_401_UNAUTHORIZED)
+
+        serializer = self.get_serializer(distribuidora)
+        return Response(serializer.data)
+
     @swagger_auto_schema(responses={200: ConsumerUnitsSeparatedBySubgroupSerializerForDocs()})
     @action(detail=True, methods=['get'], url_path='consumer-units-by-subgroup')
     def consumer_units_separated_by_subgroup(self, request: Request, pk=None):
