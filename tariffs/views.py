@@ -53,7 +53,7 @@ class DistributorViewSet(ModelViewSet):
 
     @swagger_auto_schema(query_serializer = DistributorListParamsSerializer)
     def list(self, request: Request, *args, **kwargs):
-        user_types_with_permission = RequestsPermissions.default_users_permissions
+        user_types_with_permission = RequestsPermissions.university_user_permissions
 
         params_serializer = DistributorListParamsSerializer(data=request.GET)
         if not params_serializer.is_valid():
