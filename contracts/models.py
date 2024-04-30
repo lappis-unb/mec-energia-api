@@ -121,12 +121,11 @@ class EnergyBill(models.Model):
                 raise ValueError("Invalid date format. Please use 'YYYY-MM-DD'.")
 
         if self.date > date.today():
-            raise Exception("Energy Bill date cannot be greater than current date.")
+            raise Exception("Energy bill data cannot be later than current data.")
 
-        # Posso inserir uma conta de luz com a data anterior a do contrato?
-        """ if self.date < self.contract.start_date:
-            raise Exception("Energy Bill date cannot be earlier than the contract start date.")
-        """
+        if self.date < self.consumer_unit.oldest_contract.start_date:
+            raise Exception("Energy Bill date cannot be earlier than the oldest contract start date.")
+
         super().save(*args, **kwargs)
 
     contract = models.ForeignKey(
