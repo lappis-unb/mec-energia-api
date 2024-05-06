@@ -53,7 +53,7 @@ class DistributorViewSet(ModelViewSet):
 
     @swagger_auto_schema(query_serializer = DistributorListParamsSerializer)
     def list(self, request: Request, *args, **kwargs):
-        user_types_with_permission = RequestsPermissions.default_users_permissions
+        user_types_with_permission = RequestsPermissions.university_user_permissions
 
         params_serializer = DistributorListParamsSerializer(data=request.GET)
         if not params_serializer.is_valid():
@@ -77,10 +77,28 @@ class DistributorViewSet(ModelViewSet):
         ser = DistributorSerializer(distributors, many=True, context={'request': request})
         return Response(ser.data, status.HTTP_200_OK)
 
+    def retrieve(self, request, pk=None):
+        user_types_with_permission = RequestsPermissions.university_user_permissions
+        distributor = self.get_object()
+        
+        try:
+            RequestsPermissions.check_request_permissions(request.user, user_types_with_permission, distributor.university.id)
+        except Exception as error:
+            return Response({'detail': f'{error}'}, status.HTTP_401_UNAUTHORIZED)
+
+        serializer = self.get_serializer(distributor)
+        return Response(serializer.data)
+
     @swagger_auto_schema(responses={200: ConsumerUnitsSeparatedBySubgroupSerializerForDocs()})
     @action(detail=True, methods=['get'], url_path='consumer-units-by-subgroup')
     def consumer_units_separated_by_subgroup(self, request: Request, pk=None):
+        user_types_with_permission = RequestsPermissions.university_user_permissions
         distributor: Distributor = self.get_object()
+
+        try:
+            RequestsPermissions.check_request_permissions(request.user, user_types_with_permission, distributor.university.id)
+        except Exception as error:
+            return Response({'detail': f'{error}'}, status.HTTP_401_UNAUTHORIZED)
 
         consumer_units = distributor.get_consumer_units_separated_by_subgroup()
 
