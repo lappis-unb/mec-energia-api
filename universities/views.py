@@ -118,6 +118,8 @@ class ConsumerUnitViewSet(viewsets.ModelViewSet):
         except:
             return Response({'detail': f'Error in searching if the consumer unit is the user`s favorite - {error}'}, status.HTTP_400_BAD_REQUEST)
 
+        consumer_units = sorted(consumer_units, key=lambda x: (not x["is_active"], not x["is_favorite"], x["name"]))
+
         return Response(consumer_units, status.HTTP_200_OK)
 
     def retrieve(self, request, pk=None):
