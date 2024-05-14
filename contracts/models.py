@@ -4,6 +4,7 @@ from datetime import date, datetime
 
 from utils.subgroup_util import Subgroup
 from utils.date_util import DateUtils
+from utils.energy_bill_util import EnergyBillUtils
 
 from django.core.validators import FileExtensionValidator
 
@@ -119,13 +120,15 @@ class EnergyBill(models.Model):
                 self.date = datetime.strptime(self.date, '%Y-%m-%d').date()
             except ValueError:
                 raise ValueError("Invalid date format. Please use 'YYYY-MM-DD'.")
-
         if self.date > date.today():
             raise Exception("Energy bill data cannot be later than current data.")
 
         if self.date < self.consumer_unit.oldest_contract.start_date:
             raise Exception("Energy Bill date cannot be earlier than the oldest contract start date.")
 
+        if not EnergyBillUtils.check_valid_consumption_demand(self): 
+            raise Exception('Consumption and demand field cannot be 0.')
+    
         super().save(*args, **kwargs)
 
     contract = models.ForeignKey(

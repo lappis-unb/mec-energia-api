@@ -116,3 +116,14 @@ class EnergyBillUtils:
         month, year = (month - 1, year) if month != 1 else (12, year - 1)
 
         return (energy_bill, month, year)
+
+    @classmethod
+    def check_valid_consumption_demand(cls, energy_bill): 
+        off_peak_consumption = energy_bill.off_peak_consumption_in_kwh
+        off_peak_measured_demand  = energy_bill.off_peak_measured_demand_in_kw
+        peak_consumption = energy_bill.peak_consumption_in_kwh
+        peak_measured_demand = energy_bill.peak_measured_demand_in_kw
+        
+        if (off_peak_consumption and off_peak_consumption == 0) or (off_peak_measured_demand and off_peak_consumption == 0) or (peak_consumption and  peak_consumption == 0) or (peak_measured_demand and peak_measured_demand == 0):
+            return False
+        return True
