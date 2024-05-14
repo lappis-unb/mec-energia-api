@@ -88,6 +88,17 @@ class TestEnergyBillViewSetTests:
         response = self.client.post('/api/energy-bills/', data, format='json')
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
+    def test_create_energy_invalid_consumption(self):
+        data = {
+            'consumer_unit': 1,
+            'date': '2024-05-06',
+            'off_peak_consumption_in_kwh': 0.00,
+            'off_peak_measured_demand_in_kw': 0.00
+        }
+
+        response = self.client.post('/api/energy-bills/', data, format='json')
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
     def test_create_energy_bill_long_notes(self):
         data = {
             'consumer_unit': 1,
