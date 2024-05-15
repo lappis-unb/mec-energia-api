@@ -8,6 +8,7 @@ from .models import ConsumerUnit, University
 from users.requests_permissions import RequestsPermissions
 from users.models import CustomUser
 from . import serializers
+from users.models import UniversityUser
 
 class UniversityViewSet(viewsets.ModelViewSet):
     queryset = University.objects.all()
@@ -121,18 +122,29 @@ class ConsumerUnitViewSet(viewsets.ModelViewSet):
         consumer_units = sorted(consumer_units, key=lambda x: (not x["is_active"], not x["is_favorite"], x["name"]))
 
         return Response(consumer_units, status.HTTP_200_OK)
-
+    
     def retrieve(self, request, pk=None):
         user_types_with_permission = RequestsPermissions.default_users_permissions
-        consumer_unit = self.get_object()
+        queryset = self.get_object()
+
+        university_user: UniversityUser = UniversityUser.objects.get(
+            id=request.user.id)
         
         try:
-            RequestsPermissions.check_request_permissions(request.user, user_types_with_permission, consumer_unit.university.id)
+            RequestsPermissions.check_request_permissions(request.user, user_types_with_permission, queryset.university.id)
         except Exception as error:
             return Response({'detail': f'{error}'}, status.HTTP_401_UNAUTHORIZED)
 
-        serializer = self.get_serializer(consumer_unit)
-        return Response(serializer.data)
+        serializer = self.get_serializer(queryset)
+        consumer_unit = serializer.data
+        
+        try: 
+            if request.user.type in CustomUser.university_user_types: 
+                consumer_unit['is_favorite'] = university_user.check_if_consumer_unit_is_your_favorite(pk)
+        except Exception as error: 
+            return Response({'detail': f'Error in searching if the consumer unit is the user`s favorite - {error}'}, status.HTTP_400_BAD_REQUEST)
+        
+        return Response(consumer_unit)
 
     @swagger_auto_schema(request_body=serializers.CreateConsumerUnitAndContractSerializerForDocs)
     @action(detail=False, methods=['post'])
