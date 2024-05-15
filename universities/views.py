@@ -122,6 +122,8 @@ class ConsumerUnitViewSet(viewsets.ModelViewSet):
         consumer_units = sorted(consumer_units, key=lambda x: (not x["is_active"], not x["is_favorite"], x["name"]))
 
         return Response(consumer_units, status.HTTP_200_OK)
+
+        return Response(consumer_units, status.HTTP_200_OK)
     
     def retrieve(self, request, pk=None):
         user_types_with_permission = RequestsPermissions.default_users_permissions
