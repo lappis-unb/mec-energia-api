@@ -1,11 +1,15 @@
+import os
 import re
 from rest_framework.decorators import action
 from rest_framework.viewsets import ModelViewSet, ViewSet
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import status
-
+from django.http import FileResponse
 from django.db import IntegrityError
+from django.conf import settings
+from rest_framework.decorators import api_view
+
 
 from drf_yasg.utils import swagger_auto_schema
 
@@ -18,6 +22,7 @@ from .serializers import DistributorSerializer, BlueAndGreenTariffsSerializer, C
 from users.requests_permissions import RequestsPermissions
 from universities.models import ConsumerUnit
 
+
 class DistributorViewSet(ModelViewSet):
     queryset = Distributor.objects.all()
     serializer_class = DistributorSerializer
@@ -25,9 +30,10 @@ class DistributorViewSet(ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         distributor: Distributor = self.get_object()
         user_types_with_permission = RequestsPermissions.default_users_permissions
-        
+
         try:
-            RequestsPermissions.check_request_permissions(request.user, user_types_with_permission, distributor.university.id)
+            RequestsPermissions.check_request_permissions(
+                request.user, user_types_with_permission, distributor.university.id)
         except Exception as error:
             return Response({'detail': f'{error}'}, status.HTTP_401_UNAUTHORIZED)
 
@@ -51,30 +57,35 @@ class DistributorViewSet(ModelViewSet):
 
         return Response({}, status=status.HTTP_204_NO_CONTENT)
 
-    @swagger_auto_schema(query_serializer = DistributorListParamsSerializer)
+    @swagger_auto_schema(query_serializer=DistributorListParamsSerializer)
     def list(self, request: Request, *args, **kwargs):
         user_types_with_permission = RequestsPermissions.university_user_permissions
 
         params_serializer = DistributorListParamsSerializer(data=request.GET)
         if not params_serializer.is_valid():
             return Response(params_serializer.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-        
+
         request_university_id = request.GET.get('university_id')
         request_only_pending = request.GET.get('only_pending')
 
-        only_pending = False if not request_only_pending else EndpointsUtils.convert_string_request_param_to_boolean(request_only_pending)
+        only_pending = False if not request_only_pending else EndpointsUtils.convert_string_request_param_to_boolean(
+            request_only_pending)
 
         try:
-            RequestsPermissions.check_request_permissions(request.user, user_types_with_permission, request_university_id)
+            RequestsPermissions.check_request_permissions(
+                request.user, user_types_with_permission, request_university_id)
         except Exception as error:
             return Response({'detail': f'{error}'}, status.HTTP_401_UNAUTHORIZED)
 
         if only_pending:
-            distributors = Distributor.get_distributors_pending(request_university_id)
+            distributors = Distributor.get_distributors_pending(
+                request_university_id)
         else:
-            distributors = Distributor.objects.filter(university_id = request_university_id)
+            distributors = Distributor.objects.filter(
+                university_id=request_university_id)
 
-        ser = DistributorSerializer(distributors, many=True, context={'request': request})
+        ser = DistributorSerializer(
+            distributors, many=True, context={'request': request})
         return Response(ser.data, status.HTTP_200_OK)
 
     def retrieve(self, request, pk=None):
@@ -103,36 +114,40 @@ class DistributorViewSet(ModelViewSet):
         consumer_units = distributor.get_consumer_units_separated_by_subgroup()
 
         return Response(consumer_units, status=status.HTTP_200_OK)
-    
+
     @swagger_auto_schema(responses={200: GetTariffsOfDistributorForDocs()},
-                         query_serializer = GetTariffsOfDistributorParamsSerializer)
+                         query_serializer=GetTariffsOfDistributorParamsSerializer)
     @action(detail=True, methods=['get'], url_path='get-tariffs')
     def get_blue_and_green_tariffs(self, request: Request, pk=None):
         user_types_with_permission = RequestsPermissions.default_users_permissions
         distributor: Distributor = self.get_object()
-        
-        params_serializer = GetTariffsOfDistributorParamsSerializer(data=request.GET)
+
+        params_serializer = GetTariffsOfDistributorParamsSerializer(
+            data=request.GET)
         if not params_serializer.is_valid():
             return Response(params_serializer.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-        
+
         try:
             university_id = distributor.university.id
 
-            RequestsPermissions.check_request_permissions(request.user, user_types_with_permission, university_id)
+            RequestsPermissions.check_request_permissions(
+                request.user, user_types_with_permission, university_id)
         except Exception as error:
             return Response({'detail': f'{error}'}, status.HTTP_401_UNAUTHORIZED)
 
         request_subgroup = request.GET.get('subgroup')
 
-        blue_tariff, green_tariff = distributor.get_tariffs_by_subgroups(request_subgroup)
-        
+        blue_tariff, green_tariff = distributor.get_tariffs_by_subgroups(
+            request_subgroup)
+
         response = response_tariffs_of_distributor(
-                    blue_tariff.start_date if blue_tariff else None,
-                    blue_tariff.end_date if blue_tariff else None,
-                    blue_tariff.pending if blue_tariff else True,
-                    blue_tariff, green_tariff)
+            blue_tariff.start_date if blue_tariff else None,
+            blue_tariff.end_date if blue_tariff else None,
+            blue_tariff.pending if blue_tariff else True,
+            blue_tariff, green_tariff)
 
         return Response(response, status.HTTP_200_OK)
+
 
 class TariffViewSet(ViewSet):
     queryset = Tariff.objects.all()
@@ -151,8 +166,10 @@ class TariffViewSet(ViewSet):
         subgroup = data['subgroup']
         try:
             Tariff.objects.bulk_create([
-                Tariff(**data['blue'], subgroup=subgroup, flag=Tariff.BLUE, start_date=start_date, end_date=end_date, distributor=distributor),
-                Tariff(**data['green'], subgroup=subgroup, flag=Tariff.GREEN, start_date=start_date, end_date=end_date, distributor=distributor)
+                Tariff(**data['blue'], subgroup=subgroup, flag=Tariff.BLUE,
+                       start_date=start_date, end_date=end_date, distributor=distributor),
+                Tariff(**data['green'], subgroup=subgroup, flag=Tariff.GREEN,
+                       start_date=start_date, end_date=end_date, distributor=distributor)
             ])
         except IntegrityError as error:
             return self._handle_integrity_error(error)
@@ -167,7 +184,8 @@ class TariffViewSet(ViewSet):
             formatted_error = f'There is already a tariff with given (subgroup, distributor, flag)=-'
             return Response({'errors': [formatted_error]}, status=status.HTTP_403_FORBIDDEN)
         elif 'duplicate key value violates unique constraint' in error_message:
-            duplicate_key = re.search('\)=(\(.*\))', error_message).groups(0)[0]
+            duplicate_key = re.search('\)=(\(.*\))',
+                                      error_message).groups(0)[0]
             formatted_error = f'There is already a tariff with given (subgroup, distributor, flag)={duplicate_key}'
             return Response({'errors': [formatted_error]}, status=status.HTTP_403_FORBIDDEN)
         else:
@@ -185,20 +203,25 @@ class TariffViewSet(ViewSet):
             return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
 
         data = ser.validated_data
-        tariffs = Tariff.objects.filter(subgroup=data['subgroup'], distributor=data['distributor'])
+        tariffs = Tariff.objects.filter(
+            subgroup=data['subgroup'], distributor=data['distributor'])
         if 0 == tariffs.count():
             return Response({'errors': [f'Could not find tariffs with '
-            f'subgroup={data["subgroup"]} and distributor_id={data["distributor"].id}']}, status=status.HTTP_404_NOT_FOUND)
+                                        f'subgroup={data["subgroup"]} and distributor_id={data["distributor"].id}']}, status=status.HTTP_404_NOT_FOUND)
         assert 2 == tariffs.count()
 
         start_date = data['start_date']
         end_date = data['end_date']
 
-        tariffs.filter(flag=Tariff.BLUE).update(**data['blue'], start_date=start_date, end_date=end_date)
-        tariffs.filter(flag=Tariff.GREEN).update(**data['green'], start_date=start_date, end_date=end_date)
+        tariffs.filter(flag=Tariff.BLUE).update(
+            **data['blue'], start_date=start_date, end_date=end_date)
+        tariffs.filter(flag=Tariff.GREEN).update(
+            **data['green'], start_date=start_date, end_date=end_date)
 
-        blue_tariff = Tariff.objects.filter(subgroup=data['subgroup'], distributor=data['distributor'], flag=Tariff.BLUE).first()
-        green_tariff = Tariff.objects.filter(subgroup=data['subgroup'], distributor=data['distributor'], flag=Tariff.GREEN).first()
+        blue_tariff = Tariff.objects.filter(
+            subgroup=data['subgroup'], distributor=data['distributor'], flag=Tariff.BLUE).first()
+        green_tariff = Tariff.objects.filter(
+            subgroup=data['subgroup'], distributor=data['distributor'], flag=Tariff.GREEN).first()
 
         ser = BlueAndGreenTariffsSerializer({
             'start_date': start_date,
@@ -210,3 +233,13 @@ class TariffViewSet(ViewSet):
         })
         return Response(ser.data)
 
+
+class DownloadPDFViewSet(ViewSet):
+    def list(self, request):
+        file_path = os.path.join(
+            settings.BASE_DIR, 'docs', 'Pegar_tarifas_da_distribuidora_2023.pdf')
+
+        if os.path.exists(file_path):
+            return FileResponse(open(file_path, 'rb'), as_attachment=True, filename=os.path.basename(file_path))
+        else:
+            return Response("Document does not exist", status=400)
