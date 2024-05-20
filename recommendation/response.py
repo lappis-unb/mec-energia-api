@@ -126,8 +126,8 @@ def build_response(
                 'supply_voltage': contract.supply_voltage,
                 'tariff_flag': contract.tariff_flag,
                 'subgroup': contract.subgroup,
-                'peak_contracted_demand_in_kw': contract.peak_contracted_demand_in_kw,
-                'off_peak_contracted_demand_in_kw': contract.off_peak_contracted_demand_in_kw,
+                'peak_demand_in_kw': contract.peak_contracted_demand_in_kw,
+                'off_peak_demand_in_kw': contract.off_peak_contracted_demand_in_kw,
             },
             'should_renew_contract': False,
             'consumption_history_plot': consumption_history[HEADERS_FOR_CONSUMPTION_HISTORY
