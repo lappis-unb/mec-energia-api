@@ -24,6 +24,7 @@ class Contract(models.Model):
     def save(self, *args, **kwargs):
         self.check_start_date_is_valid()
         self.subgroup = Subgroup.get_subgroup(self.supply_voltage)
+        self.check_tariff_flag_is_valid()
 
         super().save(*args, **kwargs)
 
@@ -97,6 +98,10 @@ class Contract(models.Model):
         if consumer_unit.current_contract:
             if self.start_date >= consumer_unit.oldest_contract.start_date and self.start_date < consumer_unit.current_contract.start_date:
                 raise Exception('Already have the contract in this date')
+            
+    def check_tariff_flag_is_valid(self):
+        if self.tariff_flag == 'G' and self.subgroup in ('A2', 'A3'):
+            raise Exception('Contrato não pode ter tensão equivalente aos subgrupos A2 ou A3 e ser modalidade Verde')
 
     def set_last_contract_end_date(self):
         day_before_start_date = DateUtils.get_yesterday_date(self.start_date)
