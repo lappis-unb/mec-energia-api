@@ -9,6 +9,7 @@ from .recommendation import Recommendation
 from contracts.models import Contract, EnergyBill
 
 from utils.energy_bill_util import EnergyBillUtils
+from utils.subgroup_util import Subgroup
 
 
 class University(models.Model):
@@ -187,6 +188,7 @@ class ConsumerUnit(models.Model):
                 start_date=data_contract['start_date'],
                 tariff_flag=data_contract['tariff_flag'],
                 supply_voltage=data_contract['supply_voltage'],
+                subgroup = Subgroup.get_subgroup(data_contract['supply_voltage']),
                 peak_contracted_demand_in_kw=data_contract['peak_contracted_demand_in_kw'],
                 off_peak_contracted_demand_in_kw=data_contract['off_peak_contracted_demand_in_kw'],
             )
