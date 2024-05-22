@@ -24,18 +24,11 @@ class CustomUserManager(BaseUserManager):
             
             UserType.is_valid_user_type(user.type, self.model)
             
-            # TODO retirar if externo futuramente
-            if settings.ENVIRONMENT != 'development' and settings.ENVIRONMENT != 'test':
-                if user.type in models.CustomUser.university_user_types:
-                    user.set_password(generate_random_password())
-
-                    Password.send_email_first_access_password(user)
-                else:
-                    user.set_password(password) 
-            else:
-                user.set_password(password) 
-            
-            user.save()
+            if user.type in models.CustomUser.university_user_types:
+                user.set_password(generate_random_password())
+                user.save()
+                
+                Password.send_email_first_access_password(user)
 
             return user
         except Exception as error:
