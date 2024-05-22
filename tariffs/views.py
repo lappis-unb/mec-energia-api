@@ -84,8 +84,9 @@ class DistributorViewSet(ModelViewSet):
             distributors = Distributor.objects.filter(
                 university_id=request_university_id)
 
-        ser = DistributorSerializer(
-            distributors, many=True, context={'request': request})
+
+        ser = distributors.order_by(('name').lower())
+        ser = DistributorSerializer(distributors, many=True, context={'request': request})
         return Response(ser.data, status.HTTP_200_OK)
 
     def retrieve(self, request, pk=None):
