@@ -12,8 +12,7 @@ class CustomUserSerializer(HyperlinkedModelSerializer):
         model = CustomUser
         fields = ['id', 'url', 'first_name', 'last_name', 'password',
                   'email', 'type', 'account_password_status', 'created_on']
-        extra_kwargs = {'password': {'write_only': True}}
-
+        extra_kwargs = {'password': {'write_only': True, 'required': False}}
 
         
 class UniversityUserSerializer(HyperlinkedModelSerializer):
@@ -24,7 +23,7 @@ class UniversityUserSerializer(HyperlinkedModelSerializer):
         model = UniversityUser
         fields = ['id', 'url', 'first_name', 'last_name', 'password',
                   'email', 'type', 'created_on', 'university']
-        extra_kwargs = {'password': {'write_only': True}}
+        extra_kwargs = {'password': {'write_only': True, 'required': False}}
 
 
 class RetrieveUniversityUserSerializer(HyperlinkedModelSerializer):
