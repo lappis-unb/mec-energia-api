@@ -275,10 +275,7 @@ class ConsumerUnit(models.Model):
         if not self.current_contract:
             return 'Unidade Consumidora sem Contrato'
 
-        energy_bills = Recommendation.get_energy_bills_for_recommendation(
-            self.id)
-
-        return energy_bills
+        return Recommendation.get_energy_bills_for_recommendation(self.id)
 
     def get_all_energy_bills(self):
         if not self.current_contract:
