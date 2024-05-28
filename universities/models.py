@@ -78,6 +78,16 @@ class ConsumerUnit(models.Model):
             'Uma Unidade Consumidora deve estar ligada a uma Universidade')
     )
 
+    total_installed_power = models.DecimalField(
+        decimal_places=2,
+        max_digits=6,
+        null=True,
+        blank=True, 
+        help_text=_(
+            'Potência total de geração de energia instalada em kw'
+        )
+    )
+
     created_on = models.DateTimeField(
         auto_now_add=True
     )

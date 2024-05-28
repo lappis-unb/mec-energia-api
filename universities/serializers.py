@@ -24,10 +24,11 @@ class ConsumerUnitSerializer(serializers.HyperlinkedModelSerializer):
     code = serializers.CharField()
     is_active = serializers.BooleanField()
     university = serializers.PrimaryKeyRelatedField(queryset=University.objects.all())
+    total_installed_power = serializers.DecimalField(max_digits=6, min_value=0.01, decimal_places=2, required=False)
 
     class Meta:
         model = ConsumerUnit
-        fields = ['id', 'url', 'name', 'code', 'is_active', 'date', 'is_current_energy_bill_filled', 'pending_energy_bills_number', 'university', 'created_on']
+        fields = ['id', 'url', 'name', 'code', 'is_active', 'date', 'is_current_energy_bill_filled', 'pending_energy_bills_number', 'university', 'total_installed_power', 'created_on']
 
 class ListConsumerUnitSerializerForDocs(ConsumerUnitSerializer):
     is_favorite = serializers.BooleanField()
