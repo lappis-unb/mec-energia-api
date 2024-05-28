@@ -115,7 +115,8 @@ class ConsumerUnit(models.Model):
 
         pending_bills_number = 0
         energy_bills = Recommendation.get_energy_bills_for_recommendation(
-            self.id)
+            self.id,
+            insert_atypical_energy_bill = True)
 
         for energy_bill in energy_bills:
             if energy_bill['energy_bill'] == None:

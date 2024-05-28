@@ -7,7 +7,7 @@ from contracts.models import EnergyBill
 class Recommendation:
 
     @classmethod
-    def get_energy_bills_for_recommendation(cls, consumer_unit_id):
+    def get_energy_bills_for_recommendation(cls, consumer_unit_id, insert_atypical_energy_bill = False):
         energy_bills = []
 
         try:
@@ -21,8 +21,9 @@ class Recommendation:
                     energy_bill_object['month'], 
                     energy_bill_object['year'])
 
-                if energy_bill and not energy_bill.is_atypical:
-                    energy_bill_object['energy_bill'] = EnergyBillUtils.energy_bill_dictionary(energy_bill)
+                if energy_bill:
+                    if insert_atypical_energy_bill or not energy_bill.is_atypical:
+                        energy_bill_object['energy_bill'] = EnergyBillUtils.energy_bill_dictionary(energy_bill)
                 
                 energy_bills.append(energy_bill_object)
 
