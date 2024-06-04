@@ -4,6 +4,7 @@ from rest_framework import generics
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import authentication_classes, permission_classes
 from drf_yasg.utils import swagger_auto_schema
 from django.core.exceptions import ObjectDoesNotExist
@@ -134,6 +135,24 @@ class Password():
         except Exception as error:
             raise Exception('Send email first access password: ' + str(error))
 
+class ResetPasswordByAdmin(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        token = request.auth
+        print(user.type)
+
+        user_types_with_permission = RequestsPermissions.university_user_permissions
+
+        body_university_id = request.data['university']
+
+        try:
+            RequestsPermissions.check_request_permissions(request.user, user_types_with_permission, body_university_id)
+        except Exception as error:
+            return Response({'detail': f'{error}'}, status.HTTP_401_UNAUTHORIZED)
+
+        return Response({"message": f"{request.auth}"})
 
 @authentication_classes([])
 @permission_classes([])
