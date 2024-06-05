@@ -34,7 +34,8 @@ class TestEnergyBillViewSetTests:
             'code': '111111111',
             'created_on': '2022-10-02',
             'is_active': True,
-            'university': self.university.id
+            'university': self.university.id, 
+            'total_installed_power': 12
         }
         consumer_unit_response = self.client.post('/api/consumer-units/', consumer_unit_data, format='json')
         created_consumer_unit = json.loads(consumer_unit_response.content)
@@ -117,7 +118,8 @@ class TestEnergyBillViewSetTests:
             'code': '111111111',
             'created_on': '2022-10-02',
             'is_active': True,
-            'university': self.university.id
+            'university': self.university.id, 
+            'total_installed_power': None
         }
         consumer_unit_response = self.client.post('/api/consumer-units/', consumer_unit_data, format='json')
         created_consumer_unit = json.loads(consumer_unit_response.content)
