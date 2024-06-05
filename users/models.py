@@ -57,6 +57,20 @@ class CustomUser(AbstractUser):
         choices=user_types
     )
 
+    password_status = (
+        ('OK', 'OK'),
+        ('admin_reset', 'admin_reset'),
+        ('user_reset', 'user_reset'),
+    )
+
+    account_password_status = models.CharField(
+        default='OK',
+        max_length=25,
+        null=False,
+        blank=False,
+        choices=password_status
+    )
+
     created_on = models.DateTimeField(
         auto_now_add=True
     )
@@ -64,6 +78,14 @@ class CustomUser(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
+    @classmethod
+    def search_user_by_id(cls, id):
+        try:
+            user = cls.objects.get(id = id)
+
+            return user
+        except ObjectDoesNotExist:
+            raise Exception('User does not exist')
 
     @classmethod
     def search_user_by_email(cls, email):

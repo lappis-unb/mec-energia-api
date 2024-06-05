@@ -15,7 +15,7 @@ from .requests_permissions import RequestsPermissions
 
 from utils.user.user_type_util import UserType
 from utils.endpoints_util import EndpointsUtils
-from utils.user.authentication import create_token_response, create_valid_token_response, generate_link_to_reset_password
+from utils.user.authentication import create_token_response, create_valid_token_response, generate_link_to_reset_password, generate_random_password
 from utils.email.send_email import send_email_reset_password, send_email_first_access_password
 
 from users.models import CustomUser
@@ -30,6 +30,8 @@ class Authentication(ObtainAuthToken):
 
             serializer.is_valid(raise_exception=True)
             user = serializer.validated_data['user']
+            if user.account_password_status != 'OK':
+                raise Exception('Usuário não fazer login no sistema 1111111')
             token, _ = Token.objects.get_or_create(user=user)
         except Exception as error:
             return Response({'detail': f'Unable to log in with provided credentials: {str(error)}'}, status.HTTP_401_UNAUTHORIZED)
@@ -115,10 +117,29 @@ class Password():
 
     def _invalid_all_generated_tokens(user):
         return user.change_user_last_login_time()
+    
+    def send_email_reset_password_by_admin(email):
+        try:
+            user = CustomUser.search_user_by_email(email = email)
+            
+            user.set_password(generate_random_password())
+            user.account_password_status = 'admin_reset'
+            user.save()
+
+            token = Password.generate_password_token(user)
+            link = Password.generate_link_to_reset_password(user, token)
+            
+            send_email_reset_password(user.first_name, user.email, link)
+        except Exception as error:
+            raise Exception('Send email reset password: ' + str(error))
 
     def send_email_reset_password(email):
         try:
             user = CustomUser.search_user_by_email(email = email)
+
+            user.account_password_status = 'normal_reset'
+            user.save()
+
             token = Password.generate_password_token(user)
             link = Password.generate_link_to_reset_password(user, token)
             
@@ -139,20 +160,20 @@ class ResetPasswordByAdmin(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        user = request.user
-        token = request.auth
-        print(user.type)
+        request_user = request.user
 
-        user_types_with_permission = RequestsPermissions.university_user_permissions
+        if request_user.type != 'super_user':
+            raise Exception('Esse usuário não tem permissão para executar essa ação')
 
-        body_university_id = request.data['university']
+        user_id = int(request.GET.get('user_id'))
+        user_for_reset = CustomUser.search_user_by_id(user_id)
 
-        try:
-            RequestsPermissions.check_request_permissions(request.user, user_types_with_permission, body_university_id)
-        except Exception as error:
-            return Response({'detail': f'{error}'}, status.HTTP_401_UNAUTHORIZED)
+        if request_user.id == user_for_reset.id:
+            raise Exception('Utilize o esqueci minha senha')
+        
+        Password.send_email_reset_password_by_admin(user_for_reset.email)
 
-        return Response({"message": f"{request.auth}"})
+        return Response({"message": "Enviado"})
 
 @authentication_classes([])
 @permission_classes([])
