@@ -24,7 +24,7 @@ class ConsumerUnitSerializer(serializers.HyperlinkedModelSerializer):
     code = serializers.CharField()
     is_active = serializers.BooleanField()
     university = serializers.PrimaryKeyRelatedField(queryset=University.objects.all())
-    total_installed_power = serializers.DecimalField(max_digits=6, min_value=0.01, decimal_places=2, required=False)
+    total_installed_power = serializers.DecimalField(max_digits=6, min_value=0.01, decimal_places=2, allow_null=True)
 
     class Meta:
         model = ConsumerUnit

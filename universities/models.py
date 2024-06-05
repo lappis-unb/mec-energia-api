@@ -160,6 +160,7 @@ class ConsumerUnit(models.Model):
                 name=data_consumer_unit['name'],
                 code=data_consumer_unit['code'],
                 is_active=data_consumer_unit['is_active'],
+                total_installed_power=data_consumer_unit["total_installed_power"]
             )
 
             created_contract = Contract(
@@ -188,6 +189,7 @@ class ConsumerUnit(models.Model):
                 name=data_consumer_unit['name'],
                 code=data_consumer_unit['code'],
                 is_active=data_consumer_unit['is_active'],
+                total_installed_power=data_consumer_unit["total_installed_power"]
             )
 
             if not consumer_unit:

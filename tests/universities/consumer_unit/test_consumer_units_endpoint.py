@@ -33,6 +33,7 @@ class TestConsumerUnitsEndpoint:
     def test_update_is_active_of_consumer_unit_to_false(self):
         self.consumer_unit_test_1_dict['is_active'] = False
         self.consumer_unit_test_1_dict['university'] = self.university.id
+        self.consumer_unit_test_1_dict['total_installed_power'] = 12
         
         response = self.client.put(
             f'{ENDPOINT}{self.consumer_unit_test_1.id}/',
