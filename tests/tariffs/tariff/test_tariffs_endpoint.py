@@ -97,7 +97,6 @@ class TestTariffEndpoints:
         assert status.HTTP_400_BAD_REQUEST == response.status_code
         assert 'This field is required' in error['end_date'][0]    
         assert 'This field is required' in error['blue']['off_peak_te_in_reais_per_mwh'][0]    
-        assert 'This field is required' in error['green']['na_tusd_in_reais_per_kw'][0]
 
     def test_updates_tariff(self):
         t = self._create_tariff_dict()

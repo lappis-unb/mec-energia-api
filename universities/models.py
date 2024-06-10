@@ -79,6 +79,16 @@ class ConsumerUnit(models.Model):
             'Uma Unidade Consumidora deve estar ligada a uma Universidade')
     )
 
+    total_installed_power = models.DecimalField(
+        decimal_places=2,
+        max_digits=6,
+        null=True,
+        blank=True, 
+        help_text=_(
+            'Potência total de geração de energia instalada em kw'
+        )
+    )
+
     created_on = models.DateTimeField(
         auto_now_add=True
     )
@@ -150,6 +160,7 @@ class ConsumerUnit(models.Model):
                 name=data_consumer_unit['name'],
                 code=data_consumer_unit['code'],
                 is_active=data_consumer_unit['is_active'],
+                total_installed_power=data_consumer_unit["total_installed_power"]
             )
 
             created_contract = Contract(
@@ -178,6 +189,7 @@ class ConsumerUnit(models.Model):
                 name=data_consumer_unit['name'],
                 code=data_consumer_unit['code'],
                 is_active=data_consumer_unit['is_active'],
+                total_installed_power=data_consumer_unit["total_installed_power"]
             )
 
             if not consumer_unit:

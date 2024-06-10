@@ -191,7 +191,6 @@ class ConsumerUnitViewSet(viewsets.ModelViewSet):
             RequestsPermissions.check_request_permissions(request.user, user_types_with_permission, body_university_id)
         except Exception as error:
             return Response({'detail': f'{error}'}, status.HTTP_401_UNAUTHORIZED)
-
         try:
             ConsumerUnit.edit_consumer_unit_and_contract(data['consumer_unit'], data['contract'])
             
