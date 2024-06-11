@@ -25,10 +25,14 @@ class CustomUserManager(BaseUserManager):
             UserType.is_valid_user_type(user.type, self.model)
             
             if user.type in models.CustomUser.university_user_types:
-                user.set_password(generate_random_password())
-                user.save()
-                
-                Password.send_email_first_access_password(user)
+                if settings.ENVIRONMENT != 'test':
+                    user.set_password(generate_random_password())
+                    user.save()
+
+                    Password.send_email_first_access_password(user)
+                else:
+                    user.set_password(password)
+                    user.save()
 
             return user
         except Exception as error:
