@@ -8,13 +8,17 @@ O seed de demonstração popula o banco com dados da UNB e da
 UFMG.
 
 Os comandos a seguir também devem ser executados dentro do container da api 
-(mec-energia-api). Ex.:
+(mec-energia-api).
 
+
+## Comandos
+
+**IMPORTANTE:** Para rodar os seeds é necessário alterar o ENVIRONMENT no .env para 'seed'. Após rodar o seed, retornar o ENVIRONMENT para development.
+
+Exemplo:
 ```sh
 docker exec mec-energia-api bash -c "./scripts/seed.sh"
 ```
-
-## Comandos
 
 Super User + Seed Demo:
 ```sh
