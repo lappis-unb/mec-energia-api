@@ -24,8 +24,8 @@ class CustomUserManager(BaseUserManager):
             
             UserType.is_valid_user_type(user.type, self.model)
             
-            if user.type in models.CustomUser.university_user_types:
-                if settings.ENVIRONMENT != 'test':
+            if settings.ENVIRONMENT in ['production', 'development']:
+                if user.type in models.CustomUser.university_user_types:
                     user.set_password(generate_random_password())
                     user.save()
 
@@ -33,6 +33,9 @@ class CustomUserManager(BaseUserManager):
                 else:
                     user.set_password(password)
                     user.save()
+            else:
+                user.set_password(password)
+                user.save()
 
             return user
         except Exception as error:
