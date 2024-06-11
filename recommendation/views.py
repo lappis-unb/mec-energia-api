@@ -61,8 +61,8 @@ class RecommendationViewSet(ViewSet):
         has_enough_energy_bills = consumption_history_length >= MINIMUM_ENERGY_BILLS_FOR_RECOMMENDATION
 
         if not has_enough_energy_bills:
-            errors.append(f'Lance ao menos {6 + atypical_bills_count} faturas para realizar a análise.'
-                        f"{chr(10) + 'Somente faturas marcadas como incluir na análise são consideradas.' if atypical_bills_count > 0 else ''}")
+            errors.append(f'Lance ao menos {6 + atypical_bills_count} faturas para realizar a análise'
+                        f"{'.' + chr(10) + 'Somente faturas marcadas como ?incluir na análise? são consideradas.'.replace('?', chr(34)) if atypical_bills_count > 0 else ''}")
         elif consumption_history_length + atypical_bills_count < IDEAL_ENERGY_BILLS_FOR_RECOMMENDATION:
             warnings.append(
                 f'Lance mais {pending_num} {"fatura" if pending_num == 1 else "faturas"} dos últimos 12 meses para aumentar a precisão da análise'
