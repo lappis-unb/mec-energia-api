@@ -98,10 +98,11 @@ class Contract(models.Model):
         if consumer_unit.current_contract:
             if self.start_date >= consumer_unit.oldest_contract.start_date and self.start_date < consumer_unit.current_contract.start_date:
                 raise Exception('Already have the contract in this date')
-            
+
     def check_tariff_flag_is_valid(self):
         if self.tariff_flag == 'G' and self.subgroup in ('A2', 'A3'):
-            raise Exception('Contrato não pode ter tensão equivalente aos subgrupos A2 ou A3 e ser modalidade Verde')
+            raise Exception(
+                'Contrato não pode ter tensão equivalente aos subgrupos A2 ou A3 e ser modalidade Verde')
 
     def set_last_contract_end_date(self):
         day_before_start_date = DateUtils.get_yesterday_date(self.start_date)
@@ -121,19 +122,22 @@ class Contract(models.Model):
 class EnergyBill(models.Model):
     def save(self, *args, **kwargs):
         if not isinstance(self.date, date):
-            try:    
+            try:
                 self.date = datetime.strptime(self.date, '%Y-%m-%d').date()
             except ValueError:
-                raise ValueError("Invalid date format. Please use 'YYYY-MM-DD'.")
+                raise ValueError(
+                    "Invalid date format. Please use 'YYYY-MM-DD'.")
         if self.date > date.today():
-            raise Exception("Energy bill data cannot be later than current data.")
+            raise Exception(
+                "Energy bill data cannot be later than current data.")
 
         if self.date < self.consumer_unit.oldest_contract.start_date:
-            raise Exception("Energy Bill date cannot be earlier than the oldest contract start date.")
+            raise Exception(
+                "Energy Bill date cannot be earlier than the oldest contract start date.")
 
-        if not EnergyBillUtils.check_valid_consumption_demand(self): 
+        if not EnergyBillUtils.check_valid_consumption_demand(self):
             raise Exception('Consumption and demand field cannot be 0.')
-    
+
         super().save(*args, **kwargs)
 
     contract = models.ForeignKey(
@@ -200,14 +204,14 @@ class EnergyBill(models.Model):
         blank=True,
     )
 
-    anotacoes = models.TextField( # Novo campo de anotações
+    anotacoes = models.TextField(  # Novo campo de anotações
         null=True,
         blank=True,
     )
 
     address = models.TextField(
-        null = True,
-        blank = True
+        null=True,
+        blank=True
     )
 
     @classmethod
@@ -223,14 +227,29 @@ class EnergyBill(models.Model):
             return None
         except Exception as error:
             raise Exception('Get Energy Bill: ' + str(error))
-        
+
     def check_energy_bill_month_year(consumer_unit_id, date):
         has_already_energy_bill = EnergyBill.objects.filter(
             consumer_unit=consumer_unit_id,
-            date__year=date.year, 
+            date__year=date.year,
             date__month=date.month).exists()
-        
+
         if has_already_energy_bill:
             return True
         else:
             return False
+
+    def check_energy_bill_covered_by_contract(consumer_unit_id, date):
+        oldest_contract = Contract.objects.filter(
+            consumer_unit=consumer_unit_id
+        ).order_by('start_date').first()
+
+        latest_contract = Contract.objects.filter(
+            consumer_unit=consumer_unit_id
+        ).order_by('-start_date').first()
+
+        if oldest_contract and latest_contract:
+            if date >= oldest_contract.start_date or date >= latest_contract.start_date:
+                return True
+
+        return False
