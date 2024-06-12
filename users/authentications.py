@@ -167,7 +167,7 @@ class ResetPasswordByAdmin(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         request_user = request.user
 
-        if request_user.type != 'super_user':
+        if request_user.type not in ['super_user', 'university_admin']:
             raise Exception('Esse usuário não tem permissão para executar essa ação')
 
         user_id = int(request.GET.get('user_id'))
