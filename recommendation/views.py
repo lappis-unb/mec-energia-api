@@ -54,23 +54,22 @@ class RecommendationViewSet(ViewSet):
         if is_missing_tariff:
             errors.append('Lance tarifas para análise')
 
-        consumption_history, pending_bills_dates = self._get_energy_bills_as_consumption_history(consumer_unit, contract)
+        consumption_history, pending_bills_dates, atypical_bills_count = self._get_energy_bills_as_consumption_history(consumer_unit, contract)
 
         consumption_history_length = len(consumption_history)
+        pending_num = len(pending_bills_dates) - atypical_bills_count
         has_enough_energy_bills = consumption_history_length >= MINIMUM_ENERGY_BILLS_FOR_RECOMMENDATION
+
         if not has_enough_energy_bills:
-            errors.append('Lance ao menos 6 faturas para análise.'
-                f' Foram lançadas apenas {consumption_history_length} faturas')
+            errors.append(f'Lance ao menos {6 + atypical_bills_count} faturas para realizar a análise'
+                        f"{'.' + chr(10) + 'Somente faturas marcadas como ?incluir na análise? são consideradas.'.replace('?', chr(34)) if atypical_bills_count > 0 else ''}")
+        elif consumption_history_length + atypical_bills_count < IDEAL_ENERGY_BILLS_FOR_RECOMMENDATION:
+            warnings.append(
+                f'Lance mais {pending_num} {"fatura" if pending_num == 1 else "faturas"} dos últimos 12 meses para aumentar a precisão da análise'
+            )
 
         if blue.end_date or green.end_date > date.today():
             warnings.append('Atualize as tarifas vencidas para aumentar a precisão da análise')
-
-        if consumption_history_length < IDEAL_ENERGY_BILLS_FOR_RECOMMENDATION:
-            warnings.append(
-                f'Lance todas as faturas dos últimos {IDEAL_ENERGY_BILLS_FOR_RECOMMENDATION}'
-                ' meses para aumentar a precisão da análise. Foram lançadas apenas'
-                f' {consumption_history_length} faturas'
-            )
 
         calculator = None
         if not is_missing_tariff:
@@ -110,8 +109,15 @@ class RecommendationViewSet(ViewSet):
         bills = consumer_unit.get_energy_bills_for_recommendation()
         pending_bills = consumer_unit.get_energy_bills_pending()
         bills_list: list[dict] = []
+        atypical_bills_count = 0
         for bill in bills:
             if bill['energy_bill'] == None:
+                continue
+
+            if bool(bill['energy_bill']['is_atypical']):
+                atypical_bills_count+=1
+                bill['energy_bill'] = None
+                pending_bills.append(bill)
                 continue
 
             b = bill['energy_bill']
@@ -136,7 +142,7 @@ class RecommendationViewSet(ViewSet):
             consumption_history.peak_measured_demand_in_kw = consumption_history.off_peak_measured_demand_in_kw
 
         pending_bills_dates = [f"{b['year']}-{b['month']}-01" for b in pending_bills]
-        return (consumption_history, pending_bills_dates)
+        return (consumption_history, pending_bills_dates, atypical_bills_count)
 
     def _get_tariffs(self, subgroup: str, distributor_id: int):
         tariffs = Tariff.objects.filter(subgroup=subgroup, distributor_id=distributor_id)

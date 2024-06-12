@@ -21,7 +21,7 @@ class Recommendation:
                     energy_bill_object['month'], 
                     energy_bill_object['year'])
 
-                if energy_bill and not energy_bill.is_atypical:
+                if energy_bill:
                     energy_bill_object['energy_bill'] = EnergyBillUtils.energy_bill_dictionary(energy_bill)
                 
                 energy_bills.append(energy_bill_object)
