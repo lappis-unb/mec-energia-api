@@ -89,6 +89,17 @@ class Contract(models.Model):
         blank=True
     )
 
+    def check_start_date_create_contract(self):
+        if self.consumer_unit.current_contract:
+            if self.start_date <= self.consumer_unit.current_contract.start_date:
+                raise Exception('Novo Contrato não pode ter uma data anterior ou igual ao Contrato atual')
+            
+    def check_start_date_edit_contract(self):
+        if self.consumer_unit.previous_contract:
+            if self.consumer_unit.previous_contract != self.consumer_unit.current_contract:
+                if self.start_date < self.consumer_unit.previous_contract.start_date:
+                    raise Exception('Contrato não pode ser editado com a data anterior ao ultimo Contrato')
+
     def check_start_date_is_valid(self):
         if self.end_date:
             return
@@ -106,13 +117,10 @@ class Contract(models.Model):
     def set_last_contract_end_date(self):
         day_before_start_date = DateUtils.get_yesterday_date(self.start_date)
 
-        contract = Contract.objects.filter(
-            consumer_unit=self.consumer_unit).exclude(start_date__gt=day_before_start_date).last()
-
-        if contract:
-            if not contract.end_date:
-                contract.end_date = day_before_start_date
-                contract.save()
+        if self.consumer_unit.previous_contract:
+            previous_contract = self.consumer_unit.previous_contract
+            previous_contract.end_date = day_before_start_date
+            previous_contract.save()
 
     def get_distributor_name(self):
         return self.distributor.name
