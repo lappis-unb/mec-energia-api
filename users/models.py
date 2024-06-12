@@ -59,6 +59,7 @@ class CustomUser(AbstractUser):
 
     password_status = (
         ('OK', 'OK'),
+        ('first_access', 'first_access'),
         ('admin_reset', 'admin_reset'),
         ('user_reset', 'user_reset'),
     )

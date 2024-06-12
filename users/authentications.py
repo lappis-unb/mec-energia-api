@@ -30,8 +30,9 @@ class Authentication(ObtainAuthToken):
 
             serializer.is_valid(raise_exception=True)
             user = serializer.validated_data['user']
+
             if user.account_password_status != 'OK':
-                raise Exception('Usuário não fazer login no sistema 1111111')
+                raise Exception('Usuário não pode fazer login no sistema')
             token, _ = Token.objects.get_or_create(user=user)
         except Exception as error:
             return Response({'detail': f'Unable to log in with provided credentials: {str(error)}'}, status.HTTP_401_UNAUTHORIZED)
@@ -123,6 +124,7 @@ class Password():
             user = CustomUser.search_user_by_email(email = email)
             
             user.set_password(generate_random_password())
+
             user.account_password_status = 'admin_reset'
             user.save()
 
@@ -149,6 +151,9 @@ class Password():
 
     def send_email_first_access_password(user):
         try:
+            user.account_password_status = 'first_access'
+            user.save()
+
             token = Password.generate_password_token(user)
             link = Password.generate_link_to_reset_password(user, token)
             
