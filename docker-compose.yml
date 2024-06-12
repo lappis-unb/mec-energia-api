@@ -2,7 +2,7 @@ version: '3.5'
 services:
   mec-energia-db:
     container_name: mec-energia-db
-    restart: always
+    restart: unless-stopped
     image: "postgres:${POSTGRES_VERSION}"
     ports:
       - 5432:5432
@@ -14,7 +14,7 @@ services:
 
   mec-energia-api:
     container_name: mec-energia-api
-    restart: always
+    restart: unless-stopped
     build: .
     env_file: .env
     command: ["sh", "scripts/start.sh"]
