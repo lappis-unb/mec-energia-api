@@ -100,6 +100,13 @@ class ConsumerUnit(models.Model):
     @property
     def oldest_contract(self):
         return self.contract_set.all().order_by('start_date').first()
+    
+    @property
+    def previous_contract(self) -> Contract:
+        if self.current_contract is None:
+            return None
+        
+        return self.contract_set.filter(start_date__lt=self.current_contract.start_date).order_by('start_date').last()
 
     @property
     def date(self):
