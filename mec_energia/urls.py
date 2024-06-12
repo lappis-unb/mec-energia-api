@@ -4,7 +4,7 @@ from django.urls import include, path
 from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 
-from users.authentications import Authentication, ResetPassword, ConfirmResetPassword    
+from users.authentications import Authentication, ResetPasswordByAdmin, ResetPassword, ConfirmResetPassword    
 
 from universities.urls import router as universities_router
 from contracts.urls import router as contracts_router
@@ -28,6 +28,7 @@ urlpatterns = [
     path('api/admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
     path(r'api/token/', Authentication.as_view()),
+    path(r'api/reset-password-admin/', ResetPasswordByAdmin.as_view()),
     path(r'api/reset-password/', ResetPassword.as_view()),
     path(r'api/reset-password/confirm', ConfirmResetPassword.as_view()),
     path(r'api/', include(router.urls)),
