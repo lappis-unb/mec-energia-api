@@ -32,4 +32,4 @@ def generate_link_to_reset_password(token, user_email):
     token_string = f'/?token={token}'
     email_string = f'&email={user_email}'
     
-    return endpoint_string + token_string + email_string
+    return endpoint_string + token_string
