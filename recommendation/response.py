@@ -43,6 +43,9 @@ def _generate_tariffs_as_table(blue_tariff: Tariff, green_tariff: Tariff):
 
 
 def _generate_plot_demand_and_consumption_costs_in_current_contract(current_contract_costs: DataFrame):
+    if current_contract_costs.empty:
+        return None, None
+    
     current_demand_and_consumption_costs: DataFrame = current_contract_costs[[
         'consumption_cost_in_reais', 'demand_cost_in_reais']]
     return current_demand_and_consumption_costs.to_dict('list'), current_contract_costs.consumption_cost_in_reais.sum() + current_contract_costs.demand_cost_in_reais.sum()

@@ -8,6 +8,7 @@ from rest_framework.viewsets import ViewSet
 from drf_yasg.utils import swagger_auto_schema
 
 from mec_energia.settings import MINIMUM_ENERGY_BILLS_FOR_RECOMMENDATION, IDEAL_ENERGY_BILLS_FOR_RECOMMENDATION, MINIMUM_PERCENTAGE_DIFFERENCE_FOR_CONTRACT_RENOVATION
+from mec_energia.error_response_manage import ErrorMensageParser, TariffsNotFoundError, NotEnoughEnergyBills, NotEnoughEnergyBillsWithAtypical, PendingBillsWarnning, ExpiredTariffWarnning
 from universities.models import ConsumerUnit
 from contracts.models import Contract
 from tariffs.models import Tariff
@@ -52,7 +53,7 @@ class RecommendationViewSet(ViewSet):
 
         is_missing_tariff = blue == None or green == None
         if is_missing_tariff:
-            errors.append('Lance tarifas para análise')
+            errors.append(TariffsNotFoundError)
 
         consumption_history, pending_bills_dates, atypical_bills_count = self._get_energy_bills_as_consumption_history(consumer_unit, contract)
 
@@ -61,15 +62,13 @@ class RecommendationViewSet(ViewSet):
         has_enough_energy_bills = consumption_history_length >= MINIMUM_ENERGY_BILLS_FOR_RECOMMENDATION
 
         if not has_enough_energy_bills:
-            errors.append(f'Lance ao menos {6 + atypical_bills_count} faturas para realizar a análise'
-                        f"{'.' + chr(10) + 'Somente faturas marcadas como ?incluir na análise? são consideradas.'.replace('?', chr(34)) if atypical_bills_count > 0 else ''}")
+            errors.append(ErrorMensageParser.parse(NotEnoughEnergyBills if atypical_bills_count == 0 else NotEnoughEnergyBillsWithAtypical,
+                                                   (6) if atypical_bills_count == 0 else (6 + atypical_bills_count)))
         elif consumption_history_length + atypical_bills_count < IDEAL_ENERGY_BILLS_FOR_RECOMMENDATION:
-            warnings.append(
-                f'Lance mais {pending_num} {"fatura" if pending_num == 1 else "faturas"} dos últimos 12 meses para aumentar a precisão da análise'
-            )
+            warnings.append(ErrorMensageParser.parse(PendingBillsWarnning, (pending_num, "fatura" if pending_num == 1 else "faturas")))
 
-        if blue.end_date or green.end_date > date.today():
-            warnings.append('Atualize as tarifas vencidas para aumentar a precisão da análise')
+        if not is_missing_tariff and (blue.end_date or green.end_date > date.today()):
+            warnings.append(ExpiredTariffWarnning)
 
         calculator = None
         if not is_missing_tariff:
@@ -81,7 +80,7 @@ class RecommendationViewSet(ViewSet):
             )
 
         recommendation = None
-        current_contract = calculator.current_contract
+        current_contract = calculator.current_contract if calculator else DataFrame()
 
         if calculator and has_enough_energy_bills:
             recommendation = calculator.calculate()
