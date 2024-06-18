@@ -20,7 +20,7 @@ from utils.endpoints_util import EndpointsUtils
 from utils.user.authentication import create_token_response, create_valid_token_response, generate_link_to_reset_password, generate_random_password
 from utils.email.send_email import send_email_first_access_password, send_email_reset_password, send_email_reset_password_by_admin
 
-from users.models import CustomUser
+from users.models import UserToken, CustomUser
 
 class Authentication(ObtainAuthToken):
 
@@ -71,6 +71,10 @@ class Authentication(ObtainAuthToken):
         response = create_valid_token_response(is_valid_token)
 
         return Response(response)
+    
+    def _invalid_generated_login_token(user):
+        existing_token = Token.objects.get(user=user)
+        existing_token.delete()
 
     def _create_and_update_login_response(token, user_id, user_email, user_first_name, user_last_name, user_type):
         response = create_token_response(token, user_id, user_email, user_first_name, user_last_name, user_type)
@@ -115,9 +119,12 @@ class Logout(APIView):
 
 class Password():
     def generate_password_token(user):
-        user = Password._invalid_all_generated_tokens(user)
+        Password._invalid_all_generated_password_tokens(user)
         
-        return default_token_generator.make_token(user = user)
+        token = default_token_generator.make_token(user = user)
+        UserToken.objects.create(user = user, token = token)
+
+        return token
 
     def generate_link_to_reset_password(user: str, token: str or None):
         if not token:
@@ -131,27 +138,37 @@ class Password():
     def check_password_token_is_valid(user, token):
         return default_token_generator.check_token(user, token)
 
-    def change_user_password(user_email, user_new_password, token):
+    def change_user_password(user_new_password, token):
         try:
-            user = CustomUser.search_user_by_email(email = user_email)
+            user = Password._get_user_by_token(token)
 
             user.change_user_password_by_reset_password_token(user_new_password, token)
+            user.set_account_password_status_to_ok()
 
-            Password._invalid_all_generated_tokens(user)
+            Password._invalid_all_generated_password_tokens(user)
         except Exception as error:
             raise Exception('Change user password: ' + str(error))
+    
+    def _get_user_by_token(token):
+        try:
+            user_token = UserToken.objects.get(token=token)
+            return user_token.user
+        except UserToken.DoesNotExist:
+            raise Exception('Usuário não tem token válido')
 
-    def _invalid_all_generated_tokens(user):
-        return user.change_user_last_login_time()
+    def _invalid_all_generated_password_tokens(user):
+        UserToken.objects.filter(user=user).delete()
     
     def send_email_reset_password_by_admin(email):
         try:
             user = CustomUser.search_user_by_email(email = email)
             
-            user.set_password(generate_random_password())
-
             user.account_password_status = 'admin_reset'
             user.save()
+
+            user.set_password(generate_random_password())
+
+            Authentication._invalid_generated_login_token(user)
 
             token = Password.generate_password_token(user)
             link = Password.generate_link_to_reset_password(user, token)
@@ -236,11 +253,10 @@ class ConfirmResetPassword(generics.GenericAPIView):
                          responses={200: serializers.ResetPasswordParamsForDocs})
     def post(self, request, *args, **kwargs):
         try:
-            request_user_email = request.data['user_email']
             request_user_new_password = request.data['user_new_password']
-            request_user_reset_password_token = request.data['user_reset_password_token']
+            request_user_reset_password_token = request.data['user_token']
 
-            Password.change_user_password(request_user_email, request_user_new_password, request_user_reset_password_token)
+            Password.change_user_password(request_user_new_password, request_user_reset_password_token)
 
             response = EndpointsUtils.create_message_endpoint_response(
                         status = EndpointsUtils.status_success, 

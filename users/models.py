@@ -4,9 +4,20 @@ from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ObjectDoesNotExist
 
+from mec_energia import settings
+
 from universities.models import ConsumerUnit, University
 
 from .managers import CustomUserManager
+
+
+class UserToken(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    token = models.CharField(max_length=255, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Token for {self.user.username}'
 
 
 class CustomUser(AbstractUser):
@@ -103,12 +114,6 @@ class CustomUser(AbstractUser):
         except ObjectDoesNotExist:
             raise Exception('User does not exist')
 
-    def change_user_last_login_time(self):
-        self.last_login = timezone.now()
-        self.save()
-
-        return self
-
     def change_user_password_by_reset_password_token(self, new_password, reset_password_token):
         from .authentications import Password
 
@@ -122,6 +127,10 @@ class CustomUser(AbstractUser):
             return self
         except Exception as error:
             raise Exception(str(error))
+        
+    def set_account_password_status_to_ok(self):
+        self.account_password_status = 'OK'
+        self.save()
 
     def __str__(self) -> str:
         return f'{self.first_name} {self.last_name} [{self.email}]'
