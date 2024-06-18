@@ -18,7 +18,7 @@ from .requests_permissions import RequestsPermissions
 from utils.user.user_type_util import UserType
 from utils.endpoints_util import EndpointsUtils
 from utils.user.authentication import create_token_response, create_valid_token_response, generate_link_to_reset_password, generate_random_password
-from utils.email.send_email import send_email_reset_password, send_email_first_access_password
+from utils.email.send_email import send_email_first_access_password, send_email_reset_password, send_email_reset_password_by_admin
 
 from users.models import CustomUser
 
@@ -156,7 +156,7 @@ class Password():
             token = Password.generate_password_token(user)
             link = Password.generate_link_to_reset_password(user, token)
             
-            send_email_reset_password(user.first_name, user.email, link)
+            send_email_reset_password_by_admin(user.first_name, user.email, link)
         except Exception as error:
             raise Exception('Send email reset password: ' + str(error))
 
@@ -182,7 +182,7 @@ class Password():
             token = Password.generate_password_token(user)
             link = Password.generate_link_to_reset_password(user, token)
             
-            send_email_first_access_password(user.first_name, user.email, link)
+            send_email_first_access_password(user.first_name, user.university.name, user.email, link)
         except Exception as error:
             raise Exception('Send email first access password: ' + str(error))
 
