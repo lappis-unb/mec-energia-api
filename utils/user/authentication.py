@@ -27,9 +27,9 @@ def create_valid_token_response(is_valid_token):
 
     return response
 
-def generate_link_to_reset_password(token, user_email):
+def generate_link_to_reset_password(token, user_first_name):
     endpoint_string = f'{settings.MEC_ENERGIA_URL}/{settings.MEC_ENERGIA_PASSWORD_ENDPOINT}'
     token_string = f'/?token={token}'
-    email_string = f'&email={user_email}'
+    user_first_name = f'&nome={user_first_name}'
     
-    return endpoint_string + token_string
+    return endpoint_string + user_first_name + token_string

@@ -126,7 +126,7 @@ class Password():
         if not Password.check_password_token_is_valid(user, token):
             raise Exception('Password token is not valid')
 
-        return generate_link_to_reset_password(token, user.email)
+        return generate_link_to_reset_password(token, user.first_name)
 
     def check_password_token_is_valid(user, token):
         return default_token_generator.check_token(user, token)
@@ -218,7 +218,7 @@ class ResetPassword(generics.GenericAPIView):
 
             response = EndpointsUtils.create_message_endpoint_response(
                         status = EndpointsUtils.status_success, 
-                        message = "Email was sent for user with reset password link")
+                        message = "O email foi enviado para o usuário com link de redefinição de senha")
 
             return Response(response, status.HTTP_200_OK)
         except Exception as error:

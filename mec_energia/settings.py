@@ -34,7 +34,7 @@ MEC_ENERGIA_EMAIL_APP_PASSWORD = os.getenv('MEC_ENERGIA_EMAIL_APP_PASSWORD')
 
 # Password reset
 PASSWORD_RESET_TIMEOUT = 86400  # 24 horas
-MEC_ENERGIA_PASSWORD_ENDPOINT = 'recuperacao-senha'
+MEC_ENERGIA_PASSWORD_ENDPOINT = 'definir-senha'
 
 # -----------------------------------------------------------------
 
