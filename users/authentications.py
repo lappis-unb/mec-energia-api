@@ -130,8 +130,7 @@ class Password():
         if not token:
             raise Exception('Is necessary a password token')
 
-        if not Password.check_password_token_is_valid(user, token):
-            raise Exception('Password token is not valid')
+        Password._get_user_by_token(token)
 
         return generate_link_to_reset_password(token, user.first_name)
 
@@ -163,6 +162,8 @@ class Password():
         try:
             user = CustomUser.search_user_by_email(email = email)
             
+            token = Password.generate_password_token(user)
+            
             user.account_password_status = 'admin_reset'
             user.save()
 
@@ -170,7 +171,6 @@ class Password():
 
             Authentication._invalid_generated_login_token(user)
 
-            token = Password.generate_password_token(user)
             link = Password.generate_link_to_reset_password(user, token)
             
             send_email_reset_password_by_admin(user.first_name, user.email, link)

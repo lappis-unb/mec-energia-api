@@ -118,11 +118,10 @@ class CustomUser(AbstractUser):
         from .authentications import Password
 
         try:
-            if Password.check_password_token_is_valid(self, reset_password_token):
-                self.set_password(new_password)
-                self.save()
-            else:
-                raise Exception('Reset password token is not valid')
+            Password._get_user_by_token(reset_password_token)
+            
+            self.set_password(new_password)
+            self.save()
 
             return self
         except Exception as error:
