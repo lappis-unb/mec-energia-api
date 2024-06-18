@@ -154,7 +154,7 @@ class Password():
             user_token = UserToken.objects.get(token=token)
             return user_token.user
         except UserToken.DoesNotExist:
-            raise Exception('Usuário não tem token válido')
+            raise Exception('Token inválido')
 
     def _invalid_all_generated_password_tokens(user):
         UserToken.objects.filter(user=user).delete()
