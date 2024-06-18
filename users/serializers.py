@@ -11,8 +11,9 @@ class CustomUserSerializer(HyperlinkedModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['id', 'url', 'first_name', 'last_name', 'password',
-                  'email', 'type', 'account_password_status', 'created_on']
-        extra_kwargs = {'password': {'write_only': True, 'required': False}}
+                  'email', 'type', 'account_password_status', 'is_seed_user', 'created_on']
+        extra_kwargs = {'password': {'write_only': True, 'required': False},
+                        'is_seed_user': {'write_only': True}}
 
         
 class UniversityUserSerializer(HyperlinkedModelSerializer):
