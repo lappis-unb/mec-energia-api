@@ -1,6 +1,8 @@
 
 from rest_framework import status
 from rest_framework import generics
+from rest_framework.views import APIView
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
@@ -33,9 +35,16 @@ class Authentication(ObtainAuthToken):
 
             if user.account_password_status != 'OK':
                 raise Exception('Usuário não pode fazer login no sistema')
-            token, _ = Token.objects.get_or_create(user=user)
+            
+            try:
+                existing_token = Token.objects.get(user=user)
+                existing_token.delete()
+            except Token.DoesNotExist:
+                pass
+
+            token = Token.objects.create(user=user)
         except Exception as error:
-            return Response({'detail': f'Unable to log in with provided credentials: {str(error)}'}, status.HTTP_401_UNAUTHORIZED)
+            return Response({'Authentication error': f'{str(error)}'}, status.HTTP_401_UNAUTHORIZED)
 
         try:
             UserType.is_valid_user_type(user.type)
@@ -43,7 +52,7 @@ class Authentication(ObtainAuthToken):
 
             return Response(response)
         except Exception as error:
-            return Response({'authentication error': f'{str(error)}'}, status.HTTP_400_BAD_REQUEST)
+            return Response({'Authentication error': f'{str(error)}'}, status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(query_serializer=serializers.AuthenticationGetTokenParamsSerializer,
                         responses={200: serializers.AuthenticationGetTokenSerializerForDocs()})
@@ -86,6 +95,22 @@ class Authentication(ObtainAuthToken):
         response['user']['universityId'] = university_id
 
         return response
+
+
+class Logout(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            token = Token.objects.get(user=request.user)
+            token.delete()
+
+            return Response({"detail": "Logout successful"}, status=status.HTTP_200_OK)
+        except Token.DoesNotExist:
+            return Response({"detail": "Token not found"}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"detail": f"Failed to logout: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class Password():
