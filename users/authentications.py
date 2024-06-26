@@ -244,7 +244,21 @@ class ResetPassword(generics.GenericAPIView):
                         message = str(error))
 
             return Response(response, status.HTTP_400_BAD_REQUEST)
+    
+    def get(self, request, *args, **kwargs):
+        try:
+            request_token = request.GET.get('token')
+            token = UserToken.objects.get(token=request_token)
 
+            if token:
+                response = EndpointsUtils.create_message_endpoint_response(
+                            status = EndpointsUtils.status_success, 
+                            message = "Token válido")
+            return Response(response, status.HTTP_200_OK)
+        except UserToken.DoesNotExist:
+            return Response({"detail": "Token não é valido."}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"detail": f"Error: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @authentication_classes([])
 @permission_classes([])
