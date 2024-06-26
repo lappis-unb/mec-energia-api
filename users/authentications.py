@@ -72,9 +72,11 @@ class Authentication(ObtainAuthToken):
 
         return Response(response)
     
-    def _invalid_generated_login_token(user):
-        existing_token = Token.objects.get(user=user)
-        existing_token.delete()
+    def _invalid_sessions_tokens(user):
+        sessions_tokens = Token.objects.filter(user=user)
+
+        if sessions_tokens:
+            sessions_tokens.delete()
 
     def _create_and_update_login_response(token, user_id, user_email, user_first_name, user_last_name, user_type):
         response = create_token_response(token, user_id, user_email, user_first_name, user_last_name, user_type)
@@ -126,13 +128,13 @@ class Password():
 
         return token
 
-    def generate_link_to_reset_password(user: str, token: str or None):
+    def generate_link_to_reset_password(user: str, token: str or None, password_status: str):
         if not token:
             raise Exception('Is necessary a password token')
 
         Password._get_user_by_token(token)
 
-        return generate_link_to_reset_password(token, user.first_name)
+        return generate_link_to_reset_password(token, user.first_name, password_status)
 
     def check_password_token_is_valid(user, token):
         return default_token_generator.check_token(user, token)
@@ -169,9 +171,9 @@ class Password():
 
             user.set_password(generate_random_password())
 
-            Authentication._invalid_generated_login_token(user)
+            Authentication._invalid_sessions_tokens(user)
 
-            link = Password.generate_link_to_reset_password(user, token)
+            link = Password.generate_link_to_reset_password(user, token, 'admin_reset')
             
             send_email_reset_password_by_admin(user.first_name, user.email, link)
         except Exception as error:
@@ -185,7 +187,7 @@ class Password():
             user.save()
 
             token = Password.generate_password_token(user)
-            link = Password.generate_link_to_reset_password(user, token)
+            link = Password.generate_link_to_reset_password(user, token, 'user_reset')
             
             send_email_reset_password(user.first_name, user.email, link)
         except Exception as error:
@@ -197,7 +199,7 @@ class Password():
             user.save()
 
             token = Password.generate_password_token(user)
-            link = Password.generate_link_to_reset_password(user, token)
+            link = Password.generate_link_to_reset_password(user, token, 'first_access')
             
             send_email_first_access_password(user.first_name, user.university.name, user.email, link)
         except Exception as error:

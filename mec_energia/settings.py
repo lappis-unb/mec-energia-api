@@ -34,8 +34,9 @@ MEC_ENERGIA_EMAIL_APP_PASSWORD = os.getenv('MEC_ENERGIA_EMAIL_APP_PASSWORD')
 
 # Password reset
 PASSWORD_RESET_TIMEOUT = 86400  # 24 horas
-MEC_ENERGIA_PASSWORD_ENDPOINT = 'definir-senha'
-
+MEC_ENERGIA_PASSWORD_ENDPOINT_FIRST_ACCESS = 'definir-senha'
+MEC_ENERGIA_PASSWORD_ENDPOINT_ADMIN_RESET = 'redefinir-senha'
+MEC_ENERGIA_PASSWORD_ENDPOINT_USER_RESET = 'esqueci-senha'
 # -----------------------------------------------------------------
 
 # MEDIA_ROOT  parametros para configuração de salvamento da pasta media
