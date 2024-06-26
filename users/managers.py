@@ -24,8 +24,8 @@ class CustomUserManager(BaseUserManager):
             
             UserType.is_valid_user_type(user.type, self.model)
             
-            if not user.is_seed_user and settings.ENVIRONMENT != 'test':
-                if user.type in models.CustomUser.university_user_types:
+            if settings.ENVIRONMENT in ['production', 'development']:
+                if user.type in models.CustomUser.university_user_types and not user.is_seed_user:
                     user.set_password(generate_random_password())
                     user.save()
 
