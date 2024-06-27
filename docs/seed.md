@@ -13,8 +13,6 @@ Os comandos a seguir também devem ser executados dentro do container da api
 
 ## Comandos
 
-**IMPORTANTE:** Para rodar os seeds é necessário alterar o ENVIRONMENT no .env para 'seed'. Após rodar o seed, retornar o ENVIRONMENT para development.
-
 Exemplo:
 ```sh
 docker exec mec-energia-api bash -c "./scripts/seed.sh"
