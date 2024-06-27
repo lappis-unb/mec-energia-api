@@ -27,9 +27,18 @@ def create_valid_token_response(is_valid_token):
 
     return response
 
-def generate_link_to_reset_password(token, user_email):
-    endpoint_string = f'{settings.MEC_ENERGIA_URL}/{settings.MEC_ENERGIA_PASSWORD_ENDPOINT}'
-    token_string = f'/?token={token}'
-    email_string = f'&email={user_email}'
+def generate_link_to_reset_password(token, user_first_name, password_status):
+    if password_status == 'first_access':
+        endpoint = settings.MEC_ENERGIA_PASSWORD_ENDPOINT_FIRST_ACCESS
+    elif password_status == 'admin_reset':
+        endpoint = settings.MEC_ENERGIA_PASSWORD_ENDPOINT_ADMIN_RESET
+    elif password_status == 'user_reset':
+        endpoint = settings.MEC_ENERGIA_PASSWORD_ENDPOINT_USER_RESET
+    else:
+        raise ValueError("Invalid password_status")
     
-    return endpoint_string + token_string
+    endpoint_string = f'{settings.MEC_ENERGIA_URL}/{endpoint}/'
+    user_first_name = f'?nome={user_first_name}'
+    token_string = f'&token={token}'
+    
+    return endpoint_string + user_first_name + token_string
