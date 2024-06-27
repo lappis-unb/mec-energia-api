@@ -83,12 +83,6 @@ class CustomUser(AbstractUser):
         choices=password_status
     )
 
-    is_seed_user = models.BooleanField(
-        default=False,
-        null=True,
-        blank=True,
-    )
-
     created_on = models.DateTimeField(
         auto_now_add=True
     )
