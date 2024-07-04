@@ -63,6 +63,7 @@ admin_university_user = UniversityUser.objects.create(
     email='admin@unb.br',
     first_name="João",
     last_name="da Silva",
+    is_seed_user=True
 )
 
 university_user = UniversityUser.objects.create(
@@ -71,6 +72,7 @@ university_user = UniversityUser.objects.create(
     email='usuario@unb.br',
     first_name="José",
     last_name="Santos",
+    is_seed_user=True
 )
 
 # Distribuidoras

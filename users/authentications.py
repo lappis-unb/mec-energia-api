@@ -1,6 +1,8 @@
 
 from rest_framework import status
 from rest_framework import generics
+from rest_framework.views import APIView
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
@@ -16,9 +18,9 @@ from .requests_permissions import RequestsPermissions
 from utils.user.user_type_util import UserType
 from utils.endpoints_util import EndpointsUtils
 from utils.user.authentication import create_token_response, create_valid_token_response, generate_link_to_reset_password, generate_random_password
-from utils.email.send_email import send_email_reset_password, send_email_first_access_password
+from utils.email.send_email import send_email_first_access_password, send_email_reset_password, send_email_reset_password_by_admin
 
-from users.models import CustomUser
+from users.models import UserToken, CustomUser
 
 class Authentication(ObtainAuthToken):
 
@@ -33,9 +35,16 @@ class Authentication(ObtainAuthToken):
 
             if user.account_password_status != 'OK':
                 raise Exception('Usuário não pode fazer login no sistema')
-            token, _ = Token.objects.get_or_create(user=user)
+            
+            try:
+                existing_token = Token.objects.get(user=user)
+                existing_token.delete()
+            except Token.DoesNotExist:
+                pass
+
+            token = Token.objects.create(user=user)
         except Exception as error:
-            return Response({'detail': f'Unable to log in with provided credentials: {str(error)}'}, status.HTTP_401_UNAUTHORIZED)
+            return Response({'Authentication error': f'{str(error)}'}, status.HTTP_401_UNAUTHORIZED)
 
         try:
             UserType.is_valid_user_type(user.type)
@@ -43,7 +52,7 @@ class Authentication(ObtainAuthToken):
 
             return Response(response)
         except Exception as error:
-            return Response({'authentication error': f'{str(error)}'}, status.HTTP_400_BAD_REQUEST)
+            return Response({'Authentication error': f'{str(error)}'}, status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(query_serializer=serializers.AuthenticationGetTokenParamsSerializer,
                         responses={200: serializers.AuthenticationGetTokenSerializerForDocs()})
@@ -62,6 +71,12 @@ class Authentication(ObtainAuthToken):
         response = create_valid_token_response(is_valid_token)
 
         return Response(response)
+    
+    def _invalid_sessions_tokens(user):
+        sessions_tokens = Token.objects.filter(user=user)
+
+        if sessions_tokens:
+            sessions_tokens.delete()
 
     def _create_and_update_login_response(token, user_id, user_email, user_first_name, user_last_name, user_type):
         response = create_token_response(token, user_id, user_email, user_first_name, user_last_name, user_type)
@@ -88,50 +103,79 @@ class Authentication(ObtainAuthToken):
         return response
 
 
+class Logout(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            token = Token.objects.get(user=request.user)
+            token.delete()
+
+            return Response({"detail": "Logout successful"}, status=status.HTTP_200_OK)
+        except Token.DoesNotExist:
+            return Response({"detail": "Token not found"}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"detail": f"Failed to logout: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class Password():
     def generate_password_token(user):
-        user = Password._invalid_all_generated_tokens(user)
+        Password._invalid_all_generated_password_tokens(user)
         
-        return default_token_generator.make_token(user = user)
+        token = default_token_generator.make_token(user = user)
+        UserToken.objects.create(user = user, token = token)
 
-    def generate_link_to_reset_password(user: str, token: str or None):
+        return token
+
+    def generate_link_to_reset_password(user: str, token: str or None, password_status: str):
         if not token:
             raise Exception('Is necessary a password token')
 
-        if not Password.check_password_token_is_valid(user, token):
-            raise Exception('Password token is not valid')
+        Password._get_user_by_token(token)
 
-        return generate_link_to_reset_password(token, user.email)
+        return generate_link_to_reset_password(token, user.first_name, password_status)
 
     def check_password_token_is_valid(user, token):
         return default_token_generator.check_token(user, token)
 
-    def change_user_password(user_email, user_new_password, token):
+    def change_user_password(user_new_password, token):
         try:
-            user = CustomUser.search_user_by_email(email = user_email)
+            user = Password._get_user_by_token(token)
 
             user.change_user_password_by_reset_password_token(user_new_password, token)
+            user.set_account_password_status_to_ok()
 
-            Password._invalid_all_generated_tokens(user)
+            Password._invalid_all_generated_password_tokens(user)
         except Exception as error:
             raise Exception('Change user password: ' + str(error))
+    
+    def _get_user_by_token(token):
+        try:
+            user_token = UserToken.objects.get(token=token)
+            return user_token.user
+        except UserToken.DoesNotExist:
+            raise Exception('Token inválido')
 
-    def _invalid_all_generated_tokens(user):
-        return user.change_user_last_login_time()
+    def _invalid_all_generated_password_tokens(user):
+        UserToken.objects.filter(user=user).delete()
     
     def send_email_reset_password_by_admin(email):
         try:
             user = CustomUser.search_user_by_email(email = email)
             
-            user.set_password(generate_random_password())
-
+            token = Password.generate_password_token(user)
+            
             user.account_password_status = 'admin_reset'
             user.save()
 
-            token = Password.generate_password_token(user)
-            link = Password.generate_link_to_reset_password(user, token)
+            user.set_password(generate_random_password())
+
+            Authentication._invalid_sessions_tokens(user)
+
+            link = Password.generate_link_to_reset_password(user, token, 'admin_reset')
             
-            send_email_reset_password(user.first_name, user.email, link)
+            send_email_reset_password_by_admin(user.first_name, user.email, link)
         except Exception as error:
             raise Exception('Send email reset password: ' + str(error))
 
@@ -143,7 +187,7 @@ class Password():
             user.save()
 
             token = Password.generate_password_token(user)
-            link = Password.generate_link_to_reset_password(user, token)
+            link = Password.generate_link_to_reset_password(user, token, 'user_reset')
             
             send_email_reset_password(user.first_name, user.email, link)
         except Exception as error:
@@ -155,9 +199,9 @@ class Password():
             user.save()
 
             token = Password.generate_password_token(user)
-            link = Password.generate_link_to_reset_password(user, token)
+            link = Password.generate_link_to_reset_password(user, token, 'first_access')
             
-            send_email_first_access_password(user.first_name, user.email, link)
+            send_email_first_access_password(user.first_name, user.university.name, user.email, link)
         except Exception as error:
             raise Exception('Send email first access password: ' + str(error))
 
@@ -193,7 +237,7 @@ class ResetPassword(generics.GenericAPIView):
 
             response = EndpointsUtils.create_message_endpoint_response(
                         status = EndpointsUtils.status_success, 
-                        message = "Email was sent for user with reset password link")
+                        message = "O email foi enviado para o usuário com link de redefinição de senha")
 
             return Response(response, status.HTTP_200_OK)
         except Exception as error:
@@ -202,7 +246,24 @@ class ResetPassword(generics.GenericAPIView):
                         message = str(error))
 
             return Response(response, status.HTTP_400_BAD_REQUEST)
+    
+    def get(self, request, *args, **kwargs):
+        try:
+            request_token = request.GET.get('token')
+            token = UserToken.objects.get(token=request_token)
 
+            if token:
+                response = {
+                    "status": EndpointsUtils.status_success,
+                    "message": "Token válido",
+                    "email": token.user.email,
+                }
+                
+            return Response(response, status.HTTP_200_OK)
+        except UserToken.DoesNotExist:
+            return Response({"detail": "Token não é valido."}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"detail": f"Error: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @authentication_classes([])
 @permission_classes([])
@@ -211,11 +272,10 @@ class ConfirmResetPassword(generics.GenericAPIView):
                          responses={200: serializers.ResetPasswordParamsForDocs})
     def post(self, request, *args, **kwargs):
         try:
-            request_user_email = request.data['user_email']
             request_user_new_password = request.data['user_new_password']
-            request_user_reset_password_token = request.data['user_reset_password_token']
+            request_user_reset_password_token = request.data['user_token']
 
-            Password.change_user_password(request_user_email, request_user_new_password, request_user_reset_password_token)
+            Password.change_user_password(request_user_new_password, request_user_reset_password_token)
 
             response = EndpointsUtils.create_message_endpoint_response(
                         status = EndpointsUtils.status_success, 

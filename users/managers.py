@@ -16,6 +16,8 @@ class CustomUserManager(BaseUserManager):
             if not email:
                 raise ValueError(_('Email is required'))
 
+            is_seed_user = extra_fields.pop('is_seed_user', False)
+
             email = self.normalize_email(email)
             user = self.model(email=email, **extra_fields)
             
@@ -25,7 +27,7 @@ class CustomUserManager(BaseUserManager):
             UserType.is_valid_user_type(user.type, self.model)
             
             if settings.ENVIRONMENT in ['production', 'development']:
-                if user.type in models.CustomUser.university_user_types:
+                if user.type in models.CustomUser.university_user_types and not is_seed_user:
                     user.set_password(generate_random_password())
                     user.save()
 
