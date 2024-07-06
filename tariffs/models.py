@@ -148,8 +148,22 @@ class Distributor(models.Model):
             raise Exception({'error': str(error)})
 
 
+class DataTariff:
+    def is_blue(self):
+        return type(self) == BlueTariff
+    def is_green(self):
+        return type(self) == GreenTariff
+    def as_blue_tariff(self):
+        if not self.is_blue():
+            raise Exception('Tariff is green type. Cannot convert to blue')
+        return self
+    def as_green_tariff(self):
+        if not self.is_green():
+            raise Exception('Tariff is blue type. Cannot convert to green')
+        return self
+
 @dataclass
-class BlueTariff:
+class BlueTariff(DataTariff):
     peak_tusd_in_reais_per_kw: float
     peak_tusd_in_reais_per_mwh: float
     peak_te_in_reais_per_mwh: float
@@ -158,7 +172,7 @@ class BlueTariff:
     off_peak_te_in_reais_per_mwh: float
 
 @dataclass
-class GreenTariff:
+class GreenTariff(DataTariff):
     peak_tusd_in_reais_per_mwh: float
     peak_te_in_reais_per_mwh: float
     off_peak_tusd_in_reais_per_mwh: float

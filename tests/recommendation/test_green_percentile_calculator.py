@@ -3,7 +3,7 @@ from pytest import approx
 from pandas.testing import assert_frame_equal
 
 from recommendation.green import GreenPercentileCalculator
-from recommendation.calculator import add_exceeded_demands_in_history
+from recommendation_commons.static_getters import StaticGetters
 
 from tests.recommendation.test_cases import test_cases
 
@@ -17,7 +17,8 @@ test_data = [(code) for code in test_cases.keys()]
 @pytest.mark.parametrize('code', test_data)
 def test_blue_per_calculator(code: str):
     data = test_cases[code]
-    add_exceeded_demands_in_history(data.current_tariff_flag, data.consumption_history)
+    data.consumption_history.peak_exceeded_in_kw = StaticGetters.get_exceeded_demand_column(data.consumption_history.peak_measured_demand_in_kw, data.consumption_history.contract_off_peak_demand_in_kw)
+    data.consumption_history.off_peak_exceeded_in_kw = StaticGetters.get_exceeded_demand_column(data.consumption_history.off_peak_measured_demand_in_kw, data.consumption_history.contract_off_peak_demand_in_kw)
     sut = GreenPercentileCalculator(data.consumption_history, data.green_tariff)
     result = sut.calculate()
 
