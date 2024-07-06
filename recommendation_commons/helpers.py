@@ -1,7 +1,7 @@
 from datetime import datetime
 from numpy import nan
 
-from recommendation.calculator import ContractRecommendationCalculator
+from recommendation_commons.recommendation_result import RecommendationResult
 from pandas import DataFrame
 
 def __formatted_date(date: str):
@@ -23,7 +23,7 @@ def fill_history_with_pending_dates(
 
 
 def fill_with_pending_dates(
-    recommendation: ContractRecommendationCalculator,
+    recommendation: RecommendationResult,
     consumption_history: DataFrame,
     pending_bills_dates: list[str]
 ) -> None:
