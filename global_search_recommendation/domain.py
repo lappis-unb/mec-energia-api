@@ -1,6 +1,7 @@
 from datetime import date
 
 from mec_energia.settings import MINIMUM_ENERGY_BILLS_FOR_RECOMMENDATION, IDEAL_ENERGY_BILLS_FOR_RECOMMENDATION
+from mec_energia.error_response_manage import ErrorMensageParser, TariffsNotFoundError, NotEnoughEnergyBills, NotEnoughEnergyBillsWithAtypical, PendingBillsWarnning, ExpiredTariffWarnning
 from universities.models import ConsumerUnit
 from tariffs.models import Tariff
 from recommendation_commons.static_getters import StaticGetters
@@ -30,36 +31,31 @@ class Domain:
             return ({'errors': ['Consumer unit is not active']}, status.HTTP_400_BAD_REQUEST)
         
         self.current_contract = self.consumer_unit.current_contract
-        if not self.current_contract:
-           self.errors.append('Unidade Consumidora sem Contrato')
-           return None
-
         self.distributor = self.current_contract.distributor
 
         self.blue, self.green = StaticGetters.get_tariffs(self.current_contract.subgroup, self.distributor.id)
 
-        if self.blue == None or self.green == None:
-            self.errors.append('Lance tarifas para análise')
-            return None
+        is_missing_tariff = self.blue == None or self.green == None
+        if is_missing_tariff:
+            self.errors.append(TariffsNotFoundError)
         
         self.current_tariff = self.green if self.current_contract.tariff_flag == Tariff.GREEN else self.blue
-        
-        if self.blue.end_date or self.green.end_date > date.today():
-            self.warnings.append('Atualize as tarifas vencidas para aumentar a precisão da análise')
 
         self.consumption_history, self.pending_bills_dates, atypical_bills_count = StaticGetters.get_consumption_history(self.consumer_unit, self.current_contract)
 
         self.consumption_history_length = len(self.consumption_history)
         pending_num = len(self.pending_bills_dates) - atypical_bills_count
-        
-        if self.consumption_history_length < MINIMUM_ENERGY_BILLS_FOR_RECOMMENDATION:
-            self.errors.append(f'Lance ao menos {6 + atypical_bills_count} faturas para realizar a análise'
-                        f"{'.' + chr(10) + 'Somente faturas marcadas como ?incluir na análise? são consideradas.'.replace('?', chr(34)) if atypical_bills_count > 0 else ''}")
-            return None
+        has_enough_energy_bills = self.consumption_history_length >= MINIMUM_ENERGY_BILLS_FOR_RECOMMENDATION
+
+        if not has_enough_energy_bills:
+            self.errors.append(ErrorMensageParser.parse(NotEnoughEnergyBills if atypical_bills_count == 0 else NotEnoughEnergyBillsWithAtypical,
+                                                        (6) if atypical_bills_count == 0 else (6 + atypical_bills_count)))
+
         elif self.consumption_history_length + atypical_bills_count < IDEAL_ENERGY_BILLS_FOR_RECOMMENDATION:
-            self.warnings.append(
-                f'Lance mais {pending_num} {"fatura" if pending_num == 1 else "faturas"} dos últimos 12 meses para aumentar a precisão da análise'
-            )
+            self.warnings.append(ErrorMensageParser.parse(PendingBillsWarnning, (pending_num, "fatura" if pending_num == 1 else "faturas")))
+
+        if not is_missing_tariff and (self.blue.end_date or self.green.end_date > date.today()):
+            self.warnings.append(ExpiredTariffWarnning)
 
         self.base_consumption_history = self.consumption_history[['peak_consumption_in_kwh','off_peak_consumption_in_kwh',
                              'peak_measured_demand_in_kw','off_peak_measured_demand_in_kw',
