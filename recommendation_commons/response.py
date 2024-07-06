@@ -11,7 +11,7 @@ from tariffs.serializers import BlueTariffSerializer, GreenTariffSerializer
 
 from mec_energia.settings import MINIMUM_PERCENTAGE_DIFFERENCE_FOR_CONTRACT_RENOVATION
 
-from recommendation.calculator import ContractRecommendationResult
+from recommendation_commons.recommendation_result import RecommendationResult
 
 HEADERS_FOR_CONSUMPTION_HISTORY = [
     'date', 'peak_consumption_in_kwh', 'off_peak_consumption_in_kwh',
@@ -46,11 +46,11 @@ def _generate_plot_demand_and_consumption_costs_in_current_contract(current_cont
     if current_contract_costs.empty:
         return None, None
     
-    current_demand_and_consumption_costs: DataFrame = current_contract_costs[[
-        'consumption_cost_in_reais', 'demand_cost_in_reais']]
+    current_demand_and_consumption_costs: DataFrame = current_contract_costs[['consumption_cost_in_reais', 'demand_cost_in_reais']]
+    
     return current_demand_and_consumption_costs.to_dict('list'), current_contract_costs.consumption_cost_in_reais.sum() + current_contract_costs.demand_cost_in_reais.sum()
 
-def _generate_plot_costs_comparison(recommendation: ContractRecommendationResult):
+def _generate_plot_costs_comparison(recommendation: RecommendationResult):
     result = DataFrame()
     result.insert(0, 'total_cost_in_reais_in_current', recommendation.current_contract.cost_in_reais)
     result.insert(0, 'total_cost_in_reais_in_recommended', recommendation.frame.contract_cost_in_reais)
@@ -62,7 +62,7 @@ def _generate_plot_costs_comparison(recommendation: ContractRecommendationResult
     result_dict['total_total_cost_in_reais_in_recommended'] = recommendation.frame.contract_cost_in_reais.sum()
     return result_dict
 
-def _generate_plot_detailed_contracts_costs_comparison(recommendation: ContractRecommendationResult):
+def _generate_plot_detailed_contracts_costs_comparison(recommendation: RecommendationResult):
     result = DataFrame()
 
     result.insert(0, 'consumption_cost_in_reais_in_recommended', recommendation.frame.consumption_cost_in_reais)
@@ -71,7 +71,7 @@ def _generate_plot_detailed_contracts_costs_comparison(recommendation: ContractR
     result.insert(0, 'total_cost_in_reais_in_current', recommendation.current_contract.cost_in_reais)
     return result.to_dict('list')
 
-def _generate_table_contracts_comparison(recommendation: ContractRecommendationResult):
+def _generate_table_contracts_comparison(recommendation: RecommendationResult):
     result = DataFrame()
     result.insert(0, 'absolute_difference', recommendation.frame.absolute_difference)
 
@@ -99,7 +99,7 @@ def _generate_table_contracts_comparison(recommendation: ContractRecommendationR
     return (result.to_dict('records'), contracts_comparison_totals)
 
 def build_response(
-    recommendation: ContractRecommendationResult,
+    recommendation: RecommendationResult,
     current_contract: DataFrame,
     consumption_history: DataFrame,
     contract: Contract,
@@ -113,7 +113,7 @@ def build_response(
     '''Reponsável por APENAS construir o objeto `Response` de endpoint'''
     dates = consumption_history.date
     current_contract_costs, current_total_cost = _generate_plot_demand_and_consumption_costs_in_current_contract(current_contract)
-
+    
     # FIXME: refatorar
     if recommendation == None:
         return Response({
@@ -146,10 +146,10 @@ def build_response(
     contracts_comparison, totals = _generate_table_contracts_comparison(recommendation)
     detailed_contracts_costs_comparison = _generate_plot_detailed_contracts_costs_comparison(recommendation)
     table_tariffs = _generate_tariffs_as_table(blue, green)
-
+    
     costs_ratio = totals['absolute_difference'] / totals['total_cost_in_reais_in_current']
     nominal_savings_percentage = max(0, round(costs_ratio, 3)*100)
-
+    
     return Response({
         'generated_on': datetime.now(),
         'errors': errors,

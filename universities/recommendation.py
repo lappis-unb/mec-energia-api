@@ -66,9 +66,9 @@ class Recommendation:
         
         current_energy_bill = EnergyBill.get_energy_bill(
                     consumer_unit_id,
-                    date.today().month, 
-                    date.today().year)
-
+                    date_for_recommendation.month,
+                    date_for_recommendation.year)
+        
         if current_energy_bill:
             date_for_recommendation += relativedelta(months = 1)
 
