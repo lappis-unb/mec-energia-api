@@ -26,16 +26,18 @@ class CustomUserViewSet(ModelViewSet):
 
     @action(detail=False, methods=['post'], url_path='change-user-password')
     def change_user_password(self, request: Request, pk=None):
+        user = request.user
         data = request.data
-        user_id = data.get('user_id')
+
         current_password = data.get('current_password')
         new_password = data.get('new_password')
 
-        if not user_id or not current_password or not new_password:
+        if not current_password or not new_password:
             return Response({'error': 'Todos os campos são obrigatórios'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            user = CustomUser.objects.get(id=user_id)
+            user = CustomUser.objects.get(id = user.id)
+
             user.change_user_password(current_password, new_password)
         except CustomUser.DoesNotExist:
             return Response({'error': 'Usuário não encontrado'}, status=status.HTTP_404_NOT_FOUND)
