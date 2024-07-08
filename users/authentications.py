@@ -151,11 +151,7 @@ class Password():
             raise Exception('Change user password: ' + str(error))
     
     def _get_user_by_token(token):
-        try:
-            user_token = UserToken.objects.get(token=token)
-            return user_token.user
-        except UserToken.DoesNotExist:
-            raise Exception('Token inválido')
+        return UserToken.get_user_by_token()
 
     def _invalid_all_generated_password_tokens(user):
         UserToken.objects.filter(user=user).delete()
@@ -250,20 +246,18 @@ class ResetPassword(generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
         try:
             request_token = request.GET.get('token')
-            token = UserToken.objects.get(token=request_token)
+            print(request_token, 'aaaaaaaaaaaaaa')
+            user = UserToken.get_user_by_token(token = request_token)
 
-            if token:
-                response = {
-                    "status": EndpointsUtils.status_success,
-                    "message": "Token válido",
-                    "email": token.user.email,
-                }
+            response = {
+                "status": EndpointsUtils.status_success,
+                "message": "Token válido",
+                "email": user.email,
+            }
                 
             return Response(response, status.HTTP_200_OK)
-        except UserToken.DoesNotExist:
-            return Response({"detail": "Token não é valido."}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({"detail": f"Error: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"detail": f"Error: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
 @authentication_classes([])
 @permission_classes([])
