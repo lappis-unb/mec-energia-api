@@ -33,6 +33,10 @@ class Distributor(models.Model):
         default=True
     )
 
+    is_in_new_resolution = models.BooleanField(
+        default=True
+    )
+
     class Meta:
         unique_together = ['university', 'cnpj']
 
