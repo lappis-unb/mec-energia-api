@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from django.core.exceptions import ObjectDoesNotExist
 from datetime import date, datetime
 
@@ -11,22 +11,22 @@ from django.core.validators import FileExtensionValidator
 
 class ContractManager(models.Manager):
     def create(self, *args, **kwargs):
-        obj = super().create(*args, **kwargs)
+        with transaction.atomic():
+            try:
+                obj = self.model(*args, **kwargs)
 
-        obj.set_last_contract_end_date()
+                obj.check_start_date_create_contract()
+                obj.save()
 
-        return obj
+                obj.set_last_contract_end_date()
+            except Exception as e:
+                raise e
+            
+            return obj
 
 
 class Contract(models.Model):
     objects = ContractManager()
-
-    def save(self, *args, **kwargs):
-        self.check_start_date_is_valid()
-        self.subgroup = Subgroup.get_subgroup(self.supply_voltage)
-        self.check_tariff_flag_is_valid()
-
-        super().save(*args, **kwargs)
 
     tariff_flag_choices = (
         ('G', 'Verde'),
@@ -93,7 +93,7 @@ class Contract(models.Model):
         if self.consumer_unit.current_contract:
             if self.start_date <= self.consumer_unit.current_contract.start_date:
                 raise Exception('Novo Contrato não pode ter uma data anterior ou igual ao Contrato atual')
-            
+
     def check_start_date_edit_contract(self):
         if self.consumer_unit.previous_contract:
             if self.consumer_unit.previous_contract != self.consumer_unit.current_contract:
