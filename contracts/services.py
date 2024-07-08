@@ -5,6 +5,7 @@ import csv
 from io import TextIOWrapper
 from collections import defaultdict
 from mec_energia.error_response_manage import * 
+import math
 
 class ContractServices:  
     def get_file_errors(self, csv_reader, consumer_unit_id): 
@@ -28,7 +29,7 @@ class ContractServices:
                     'value': date,
                     'errors': row_errors["date"]
                 },
-                'invoice_in_reais': {'value': row.get('invoice_in_reais', ""), 'errors': row_errors.get('invoice_in_reais')},
+                'invoice_in_reais': {'value': "" if math.isnan(row.get('invoice_in_reais')) else row.get('invoice_in_reais', ""), 'errors': row_errors.get('invoice_in_reais')},
                 'peak_consumption_in_kwh': {'value': row.get('peak_consumption_in_kwh', ""), 'errors': row_errors.get('peak_consumption_in_kwh')},
                 'off_peak_consumption_in_kwh': {'value': row.get('off_peak_consumption_in_kwh', ""), 'errors': row_errors.get('off_peak_consumption_in_kwh')},
                 'peak_measured_demand_in_kw': {'value': row.get('peak_measured_demand_in_kw', ""), 'errors': row_errors.get('peak_measured_demand_in_kw')},
@@ -62,6 +63,9 @@ class ContractServices:
             value = row.get(field, "")
             if len(str(value)) > max_length:
                 errors[field].append(ValueMaxError)
+
+        if math.isnan(row.get('invoice_in_reais')) or row.get('invoice_in_reais') == '':
+            errors['invoice_in_reais'].append(EnergyBillValueError)
 
         return errors, date
 

@@ -9,6 +9,7 @@ DateNotCoverByContractError = (7, "Este mês não é coberto por um contrato reg
 FormatDateError = (8, "A data não está formatada corretamente")
 ValueMaxError = (9, "Valores de Consumo e Demanda devem ser números entre 0,1 e 99.999,99")
 AlreadyHasEnergyBill = (10, "Já existe uma fatura lançada neste mês")
+EnergyBillValueError = (11, "O valor da fatura deve ser um número entre 0,1 e 99.999.999,99")
 
 class ErrorMensageParser():    
     @classmethod
