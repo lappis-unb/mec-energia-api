@@ -125,6 +125,12 @@ class CustomUser(AbstractUser):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
+        
+    def change_user_password(self, current_password, new_password):
+        if not self.check_password(current_password):
+            raise Exception('Erro ao alterar senha: senha atual incorreta')
+        self.set_password(new_password)
+        self.save()
 
     @classmethod
     def search_user_by_id(cls, id):

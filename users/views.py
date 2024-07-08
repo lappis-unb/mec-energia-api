@@ -24,6 +24,26 @@ class CustomUserViewSet(ModelViewSet):
         except Exception as error:
             return Response({'detail': f'{error}'}, status.HTTP_401_UNAUTHORIZED)
 
+    @action(detail=False, methods=['post'], url_path='change-user-password')
+    def change_user_password(self, request: Request, pk=None):
+        data = request.data
+        user_id = data.get('user_id')
+        current_password = data.get('current_password')
+        new_password = data.get('new_password')
+
+        if not user_id or not current_password or not new_password:
+            return Response({'error': 'Todos os campos são obrigatórios'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = CustomUser.objects.get(id=user_id)
+            user.change_user_password(current_password, new_password)
+        except CustomUser.DoesNotExist:
+            return Response({'error': 'Usuário não encontrado'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as error:
+            return Response({'error': str(error)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({'detail': 'Senha alterada com sucesso'}, status=status.HTTP_200_OK)
+    
     @swagger_auto_schema(query_serializer=ListUsersParamsSerializer)
     def list(self, request):
         user_types_with_permission = RequestsPermissions.admin_permission
