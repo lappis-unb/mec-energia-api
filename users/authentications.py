@@ -33,7 +33,7 @@ class Authentication(ObtainAuthToken):
             serializer.is_valid(raise_exception=True)
             user = serializer.validated_data['user']
 
-            if user.account_password_status != 'OK':
+            if not user.account_password_status in ['OK', 'normal_reset']:
                 raise Exception('Usuário não pode fazer login no sistema')
             
             try:
@@ -151,7 +151,7 @@ class Password():
             raise Exception('Change user password: ' + str(error))
     
     def _get_user_by_token(token):
-        return UserToken.get_user_by_token()
+        return UserToken.get_user_by_token(token)
 
     def _invalid_all_generated_password_tokens(user):
         UserToken.objects.filter(user=user).delete()
@@ -246,8 +246,7 @@ class ResetPassword(generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
         try:
             request_token = request.GET.get('token')
-            print(request_token, 'aaaaaaaaaaaaaa')
-            user = UserToken.get_user_by_token(token = request_token)
+            user = UserToken.get_user_by_token(request_token)
 
             response = {
                 "status": EndpointsUtils.status_success,
