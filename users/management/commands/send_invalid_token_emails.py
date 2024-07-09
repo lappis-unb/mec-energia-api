@@ -1,13 +1,18 @@
 from django.core.management.base import BaseCommand, CommandParser
 
 from users.models import UserToken
+from users.authentications import Password
 
 class Command(BaseCommand):
     help = "Send email for all invalid trieds tokens"
 
     def handle(self, *args, **options) -> None:
-       print('----------------', flush=True)
-       token = UserToken.objects.get_invalid_tried_token()
+        users = UserToken.objects.get_user_users_waiting_to_send_email()
 
-       send_email(token.user.email)
-       print('ok', flush=True)
+        for user in users:
+            if user.account_password_status == 'first_access':
+                Password.send_email_first_access_password(user)
+            elif user.account_password_status == 'admin_reset':
+                Password.send_email_reset_password_by_admin(user.email)
+            elif user.account_password_status == 'user_reset':
+                Password.send_email_reset_password(user.email)

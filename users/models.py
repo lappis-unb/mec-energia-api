@@ -16,13 +16,20 @@ class UserTokenManager(models.Manager):
     def valid_tokens(self):
         expiration_time = timezone.now() - timedelta(minutes=settings.RESET_PASSWORD_TOKEN_TIMEOUT)
 
-        return self.filter(created_at__gt=expiration_time)
+        return self.filter(created_at__gt = expiration_time)
+    
+    def get_user_users_waiting_to_send_email(self):
+        expiration_time = timezone.now() - timedelta(minutes=settings.RESEND_EMAIL_RESET_PASSWORD_TIMEOUT)
+        tokens = self.filter(invalid_tried_at__gt = expiration_time)
+
+        return CustomUser.objects.filter(id__in = tokens.values_list('user_id', flat=True))
     
 
 class UserToken(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     token = models.CharField(max_length=255, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    invalid_tried_at = models.DateTimeField(null=True, blank=True)
 
     objects = UserTokenManager()
 
@@ -41,6 +48,21 @@ class UserToken(models.Model):
 
             return user_token.user
         except UserToken.DoesNotExist:
+            raise Exception('Token inválido')
+        
+    @classmethod
+    def get_user_by_token_and_set_invalid_tried(cls, token):
+        try:
+            user_token = UserToken.objects.get(token = token)
+
+            if not user_token.is_valid_token:
+                user_token.invalid_tried_at = timezone.now()
+                user_token.save()
+                
+                raise Exception('Token inválido')
+
+            return user_token.user
+        except UserToken.DoesNotExist:            
             raise Exception('Token inválido')
 
     @classmethod

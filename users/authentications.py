@@ -182,6 +182,8 @@ class Password():
             user.account_password_status = 'normal_reset'
             user.save()
 
+            Authentication._invalid_sessions_tokens(user)
+
             token = Password.generate_password_token(user)
             link = Password.generate_link_to_reset_password(user, token, 'user_reset')
             
@@ -193,6 +195,8 @@ class Password():
         try:
             user.account_password_status = 'first_access'
             user.save()
+
+            Authentication._invalid_sessions_tokens(user)
 
             token = Password.generate_password_token(user)
             link = Password.generate_link_to_reset_password(user, token, 'first_access')
@@ -246,7 +250,9 @@ class ResetPassword(generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
         try:
             request_token = request.GET.get('token')
-            user = UserToken.get_user_by_token(request_token)
+            user = UserToken.get_user_by_token_and_set_invalid_tried(request_token)
+
+            UserToken.set_invalid_tried(request_token)
 
             response = {
                 "status": EndpointsUtils.status_success,
