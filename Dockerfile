@@ -1,13 +1,14 @@
 FROM python:3.10.5
 
 RUN apt-get update && \
-    apt-get install -y libpq-dev
+    apt-get install -y libpq-dev cron
 
-RUN useradd --create-home dev
+# ----------------------------------< cron >-----------------------------------------------
+COPY cronjob/cronjob /etc/cron.d/mec-cron
+RUN chmod -R 755 /etc/cron.d/mec-cron && \
+    /usr/bin/crontab /etc/cron.d/mec-cron
 
 WORKDIR /home/dev/mec-energia-api
-
-USER dev
 
 COPY . .
 

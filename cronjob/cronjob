@@ -1,0 +1,1 @@
+* * * * * export $(cat /root/env | xargs) && python ./manage.py send_invalid_token_emails >> ./logs/cron_output.log 2>&1
