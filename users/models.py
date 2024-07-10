@@ -62,8 +62,8 @@ class UserToken(models.Model):
                 raise Exception('Token inválido')
 
             return user_token.user
-        except UserToken.DoesNotExist:            
-            raise Exception('Token inválido')
+        except UserToken.DoesNotExist:
+            raise Exception('Token já utilizado ou não existe')
 
     @classmethod
     def get_enable_user_token_by_user(cls, user):
