@@ -1,19 +1,7 @@
-date,invoice_in_reais,is_atypical,peak_consumption_in_kwh,off_peak_consumption_in_kwh,peak_measured_demand_in_kw,off_peak_measured_demand_in_kw,anotacoes,address
-2024-04-01,150,false,100,50,10,5,teste1,endereco x
-2024-03-01,200,false,"321,87",44444444444,44,65,teste2,endereco y
-2024-02-01,777773333333,false,400,44444444444,777777777777,123,teste3,endereco z
-2024-01-01,301,false,1200,3,532,123,teste4,bloco a
-2024-04-01,432,false,100,50,10,5,teste1,endereco x
-2014-04-01,34567,false,100,50,10,5,teste1,endereco x
-2023-12-01,432,false,100,50,10,5,teste1,endereco x
-2023-11-01,555,true,100,5078,10,5,teste1,endereco x
-2023-10-01,555,true,100,5078,10,5,teste1,endereco x
-2023-09-01,555,true,100,5078,10,5,teste1,endereco x
-2023-08-01,555,true,100,5078,10,5,teste1,endereco x
-2023-07-01,555,true,100,5078,10,5,teste1,endereco x
-2023-06-01,555,true,100,5078,10,5,teste1,endereco x
-2023-05-01,555,true,100,5078,10,5,teste1,endereco x
-2023-04-01,555,true,100,5078,10,5,teste1,endereco x
-2023-03-01,555,true,100,5078,10,5,teste1,endereco x
-2023-01-01,555,true,100,5078,10,5,teste1,endereco x
-2023-02-01,555,true,100,5078,10,5,teste1,endereco x
+"Orientações: 
+- Mantenha as colunas na mesma ordem, sem modificar o texto dos cabeçalhos
+- Preencha a data da fatura no formato MM/AAAA, ou DD/MM/AAAA usando números e a barra como separador
+- Preencha os outros valores somente com números, usando , como separador decimal
+- Para faturas da modalidade tarifária Verde, preencha as colunas Fora ponta, deixando as colunas Consumo Ponta (kWh) e Demanda Ponta (kW) em branco",,,,,
+Data,Consumo Ponta (kWh),Consumo Fora Ponta (kWh),Demanda Ponta (kW),Demanda Fora Ponta (kW),"Valor (R$)"
+04/2024,325,325,350,350,"3245,77"
