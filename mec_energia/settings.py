@@ -41,7 +41,7 @@ RESET_PASSWORD_TOKEN_TIMEOUT = 1  # 30 munitos
 RESEND_EMAIL_RESET_PASSWORD_TIMEOUT = 2  # 60 minutos
 MEC_ENERGIA_PASSWORD_ENDPOINT_FIRST_ACCESS = 'definir-senha'
 MEC_ENERGIA_PASSWORD_ENDPOINT_ADMIN_RESET = 'redefinir-senha'
-MEC_ENERGIA_PASSWORD_ENDPOINT_USER_RESET = 'esqueci-senha'
+MEC_ENERGIA_PASSWORD_ENDPOINT_USER_RESET = 'redefinir-senha'
 # -----------------------------------------------------------------
 
 # MEDIA_ROOT  parametros para configuração de salvamento da pasta media
