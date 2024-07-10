@@ -28,6 +28,10 @@ class ContractManager(models.Manager):
 class Contract(models.Model):
     objects = ContractManager()
 
+    def save(self, *args, **kwargs):
+        self.subgroup = Subgroup.get_subgroup(self.supply_voltage)
+        super().save(*args, **kwargs)
+
     tariff_flag_choices = (
         ('G', 'Verde'),
         ('B', 'Azul'),
@@ -92,7 +96,7 @@ class Contract(models.Model):
     def check_start_date_create_contract(self):
         if self.consumer_unit.current_contract:
             if self.start_date <= self.consumer_unit.current_contract.start_date:
-                raise Exception('Novo Contrato não pode ter uma data anterior ou igual ao Contrato atual')
+                raise Exception(self.start_date, self.consumer_unit.current_contract.start_date, 'Novo Contrato não pode ter uma data anterior ou igual ao Contrato atual')
 
     def check_start_date_edit_contract(self):
         if self.consumer_unit.previous_contract:
