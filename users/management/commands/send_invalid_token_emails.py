@@ -8,6 +8,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options) -> None:
         users = UserToken.objects.get_user_users_waiting_to_send_email()
+        print(len(users), flush = True)
 
         for user in users:
             if user.account_password_status == 'first_access':
