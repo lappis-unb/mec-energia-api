@@ -252,8 +252,6 @@ class ResetPassword(generics.GenericAPIView):
             request_token = request.GET.get('token')
             user = UserToken.get_user_by_token_and_set_invalid_tried(request_token)
 
-            UserToken.set_invalid_tried(request_token)
-
             response = {
                 "status": EndpointsUtils.status_success,
                 "message": "Token válido",
