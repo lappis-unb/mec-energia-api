@@ -35,7 +35,7 @@ class TestContractEndpoint:
         self.contract_test_2_dict = dicts_test_utils.contract_dict_2
         self.contract_test_3_dict = dicts_test_utils.contract_dict_3
         self.contract_test_4_dict = dicts_test_utils.contract_dict_4
-        self.contract_test_5_dict = dicts_test_utils.contract_dict_4
+        self.contract_test_5_dict = dicts_test_utils.contract_dict_5
 
         self.contract_test_1 = create_objects_test_utils.create_test_contract(self.contract_test_1_dict, self.distributor, self.consumer_unit_test)
         self.contract_test_2 = create_objects_test_utils.create_test_contract(self.contract_test_2_dict, self.distributor, self.consumer_unit_test)
@@ -70,7 +70,7 @@ class TestContractEndpoint:
             contract_test_6_dict = dicts_test_utils.contract_dict_6
             create_objects_test_utils.create_test_contract(contract_test_6_dict, self.distributor, self.consumer_unit_test)
 
-        assert 'Already have the contract in this date' in str(e.value)
+        assert 'Novo Contrato não pode ter uma data anterior ou igual ao Contrato atual' in str(e.value)
 
     def test_contract_with_valid_start_date(self):
         teste = create_objects_test_utils.create_test_contract(dicts_test_utils.contract_dict_7, self.distributor, self.consumer_unit_test)

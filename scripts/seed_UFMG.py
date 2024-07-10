@@ -185,7 +185,7 @@ contract_campus_pampulha = Contract.objects.create(
     tariff_flag=Tariff.BLUE,
     consumer_unit=uc_campus_pampulha,
     distributor=distributor_cemig,
-    start_date=date(2023,1,1),
+    start_date=date(2023,2,1),
     supply_voltage=13.8,
     peak_contracted_demand_in_kw=150,
     off_peak_contracted_demand_in_kw=100,
@@ -215,22 +215,22 @@ uc_fazenda_modelo = ConsumerUnit.objects.create(
     university=university,
 )
 
-contract_fazenda_modelo = Contract.objects.create(
-    tariff_flag=Tariff.GREEN,
-    consumer_unit=uc_fazenda_modelo,
-    distributor=distributor_cemig,
-    start_date=date(2024,1,1),
-    supply_voltage=13.8,
-    peak_contracted_demand_in_kw=150,
-    off_peak_contracted_demand_in_kw=150,
-)
-
 contract_fazenda_modelo_0 = Contract.objects.create(
     tariff_flag=Tariff.GREEN,
     consumer_unit=uc_fazenda_modelo,
     distributor=distributor_ceee,
     start_date=date(2022,1,1),
     end_date=date(2023,12,31),
+    supply_voltage=13.8,
+    peak_contracted_demand_in_kw=150,
+    off_peak_contracted_demand_in_kw=150,
+)
+
+contract_fazenda_modelo = Contract.objects.create(
+    tariff_flag=Tariff.GREEN,
+    consumer_unit=uc_fazenda_modelo,
+    distributor=distributor_cemig,
+    start_date=date(2024,1,1),
     supply_voltage=13.8,
     peak_contracted_demand_in_kw=150,
     off_peak_contracted_demand_in_kw=150,
@@ -247,7 +247,7 @@ contract_fazenda_experimental = Contract.objects.create(
     tariff_flag=Tariff.BLUE,
     consumer_unit=uc_fazenda_experimental,
     distributor=distributor_cemig,
-    start_date=date(2023,1,1),
+    start_date=date(2023,4,1),
     supply_voltage=95,
     peak_contracted_demand_in_kw=300,
     off_peak_contracted_demand_in_kw=385,

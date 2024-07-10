@@ -33,7 +33,7 @@ class Authentication(ObtainAuthToken):
             serializer.is_valid(raise_exception=True)
             user = serializer.validated_data['user']
 
-            if user.account_password_status != 'OK':
+            if not user.account_password_status in ['OK', 'normal_reset']:
                 raise Exception('Usuário não pode fazer login no sistema')
             
             try:
@@ -151,11 +151,7 @@ class Password():
             raise Exception('Change user password: ' + str(error))
     
     def _get_user_by_token(token):
-        try:
-            user_token = UserToken.objects.get(token=token)
-            return user_token.user
-        except UserToken.DoesNotExist:
-            raise Exception('Token inválido')
+        return UserToken.get_user_by_token(token)
 
     def _invalid_all_generated_password_tokens(user):
         UserToken.objects.filter(user=user).delete()
@@ -186,6 +182,8 @@ class Password():
             user.account_password_status = 'normal_reset'
             user.save()
 
+            Authentication._invalid_sessions_tokens(user)
+
             token = Password.generate_password_token(user)
             link = Password.generate_link_to_reset_password(user, token, 'user_reset')
             
@@ -197,6 +195,8 @@ class Password():
         try:
             user.account_password_status = 'first_access'
             user.save()
+
+            Authentication._invalid_sessions_tokens(user)
 
             token = Password.generate_password_token(user)
             link = Password.generate_link_to_reset_password(user, token, 'first_access')
@@ -250,20 +250,17 @@ class ResetPassword(generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
         try:
             request_token = request.GET.get('token')
-            token = UserToken.objects.get(token=request_token)
+            user = UserToken.get_user_by_token_and_set_invalid_tried(request_token)
 
-            if token:
-                response = {
-                    "status": EndpointsUtils.status_success,
-                    "message": "Token válido",
-                    "email": token.user.email,
-                }
+            response = {
+                "status": EndpointsUtils.status_success,
+                "message": "Token válido",
+                "email": user.email,
+            }
                 
             return Response(response, status.HTTP_200_OK)
-        except UserToken.DoesNotExist:
-            return Response({"detail": "Token não é valido."}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({"detail": f"Error: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"detail": f"Error: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
 @authentication_classes([])
 @permission_classes([])

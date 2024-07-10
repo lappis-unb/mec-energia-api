@@ -59,11 +59,11 @@ class TestContractSubGroup:
             contract_test_6_dict = dicts_test_utils.contract_dict_6
             create_objects_test_utils.create_test_contract(contract_test_6_dict, self.distributor, self.consumer_unit_test)
 
-        assert 'Already have the contract in this date' in str(e.value)
+        assert 'Novo Contrato não pode ter uma data anterior ou igual ao Contrato atual' in str(e.value)
 
     def test_throws_exception_when_suply_voltage_does_not_match_subgroup_ranges(self):
         with pytest.raises(Exception) as e:
-            contract_test_5_dict = dicts_test_utils.contract_dict_5
+            contract_test_5_dict = dicts_test_utils.contract_dict_9_wrong_subgroup
             create_objects_test_utils.create_test_contract(contract_test_5_dict, self.distributor, self.consumer_unit_test)
         
         assert 'Subgroup not found' in str(e.value)

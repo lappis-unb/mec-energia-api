@@ -44,7 +44,7 @@ consumer_unit_dict_4 = {
 # Contrato
 
 contract_dict_1 = {
-    'start_date': date(year = 2022, month = 1, day = 1),
+    'start_date': date(year = 2021, month = 1, day = 1),
     'tariff_flag': 'V',
     'supply_voltage': 100.00,
     'peak_contracted_demand_in_kw': 100.00,
@@ -52,7 +52,7 @@ contract_dict_1 = {
 }
 
 contract_dict_2 = {
-    'start_date': date(year=2023, month = 1, day = 1),
+    'start_date': date(year=2022, month = 1, day = 1),
     'tariff_flag': 'A',
     'supply_voltage': 250.00,
     'peak_contracted_demand_in_kw': 250.00,
@@ -60,7 +60,7 @@ contract_dict_2 = {
 }
 
 contract_dict_3 = {
-    'start_date': date(year=2024, month = 1, day = 1),
+    'start_date': date(year=2023, month = 1, day = 1),
     'tariff_flag': 'A',
     'supply_voltage': 69,
     'peak_contracted_demand_in_kw': 250.00,
@@ -68,7 +68,7 @@ contract_dict_3 = {
 }
 
 contract_dict_4 = {
-    'start_date': date(year=2025, month = 1, day = 1),
+    'start_date': date(year=2024, month = 1, day = 1),
     'tariff_flag': 'V',
     'supply_voltage': 100.00,
     'peak_contracted_demand_in_kw': 100.00,
@@ -78,7 +78,7 @@ contract_dict_4 = {
 contract_dict_5 = {
     'start_date': date(year=2050, month = 1, day = 1),
     'tariff_flag': 'A',
-    'supply_voltage': 70,
+    'supply_voltage': 88,
     'peak_contracted_demand_in_kw': 250.00,
     'off_peak_contracted_demand_in_kw': 250.00,
 }
@@ -104,6 +104,14 @@ contract_dict_8 = {
     'start_date': date(year=2052, month = 1, day = 1),
     'tariff_flag': 'V',
     'supply_voltage': 100.00,
+    'peak_contracted_demand_in_kw': 250.00,
+    'off_peak_contracted_demand_in_kw': 250.00,
+}
+
+contract_dict_9_wrong_subgroup = {
+    'start_date': date(year=2050, month = 1, day = 1),
+    'tariff_flag': 'A',
+    'supply_voltage': 70,
     'peak_contracted_demand_in_kw': 250.00,
     'off_peak_contracted_demand_in_kw': 250.00,
 }

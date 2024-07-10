@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ObjectDoesNotExist
+from datetime import timedelta
 
 from mec_energia import settings
 
@@ -11,13 +12,63 @@ from universities.models import ConsumerUnit, University
 from .managers import CustomUserManager
 
 
+class UserTokenManager(models.Manager):
+    def valid_tokens(self):
+        expiration_time = timezone.now() - timedelta(minutes=settings.RESET_PASSWORD_TOKEN_TIMEOUT)
+
+        return self.filter(created_at__gt = expiration_time)
+    
+    def get_user_users_waiting_to_send_email(self):
+        expiration_time = timezone.now() - timedelta(minutes=settings.RESEND_EMAIL_RESET_PASSWORD_TIMEOUT)
+        tokens = self.filter(invalid_tried_at__gt = expiration_time)
+
+        return CustomUser.objects.filter(id__in = tokens.values_list('user_id', flat=True))
+    
+
 class UserToken(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     token = models.CharField(max_length=255, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    invalid_tried_at = models.DateTimeField(null=True, blank=True)
 
-    def __str__(self):
-        return f'Token for {self.user.username}'
+    objects = UserTokenManager()
+
+    @property
+    def is_valid_token(self):
+        expiration_time = self.created_at + timedelta(minutes = settings.RESET_PASSWORD_TOKEN_TIMEOUT)
+        return timezone.now() < expiration_time
+    
+    @classmethod
+    def get_user_by_token(cls, token):
+        try:
+            user_token = UserToken.objects.get(token = token)
+
+            if not user_token.is_valid_token:
+                raise Exception('Token inválido')
+
+            return user_token.user
+        except UserToken.DoesNotExist:
+            raise Exception('Token inválido')
+        
+    @classmethod
+    def get_user_by_token_and_set_invalid_tried(cls, token):
+        try:
+            user_token = UserToken.objects.get(token = token)
+
+            if not user_token.is_valid_token:
+                user_token.invalid_tried_at = timezone.now()
+                user_token.save()
+                
+                raise Exception('Token inválido')
+
+            return user_token.user
+        except UserToken.DoesNotExist:            
+            raise Exception('Token inválido')
+
+    @classmethod
+    def get_enable_user_token_by_user(cls, user):
+        valid_token = cls.objects.valid_tokens().filter(user=user)
+        return valid_token.exists()
 
 
 class CustomUser(AbstractUser):
@@ -83,12 +134,25 @@ class CustomUser(AbstractUser):
         choices=password_status
     )
 
+    @property
+    def have_reset_password_token_enable(self) -> bool:
+        return UserToken.get_enable_user_token_by_user(user = self)
+
+    def __str__(self):
+        return f'Token for {self.user.username}'
+
     created_on = models.DateTimeField(
         auto_now_add=True
     )
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
+        
+    def change_user_password(self, current_password, new_password):
+        if not self.check_password(current_password):
+            raise Exception('Erro ao alterar senha: senha atual incorreta')
+        self.set_password(new_password)
+        self.save()
 
     @classmethod
     def search_user_by_id(cls, id):
