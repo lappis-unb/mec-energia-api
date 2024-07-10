@@ -10,12 +10,15 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from django.http import FileResponse
 from datetime import datetime
+import pandas as pd
 
 from . import models
 from . import serializers
+from . import services
 
 from universities.models import ConsumerUnit
 from users.requests_permissions import RequestsPermissions
+from .services import ContractServices
 
 from utils.subgroup_util import Subgroup
 
@@ -263,113 +266,32 @@ class EnergyBillViewSet(viewsets.ModelViewSet):
 
         return Response({'created': response_data}, status=status.HTTP_201_CREATED)
 
-    # Csv functions
-
-    def validate_csv_row(self, row, consumer_unit_id):
-        errors = {}
-
-        try:
-            date = datetime.strptime(row['date'], '%Y-%m-%d').date()
-            errors['date'] = False
-        except ValueError:
-            errors['date'] = True
-
-        for field, max_length in [
-            ('invoice_in_reais', 10),
-            ('peak_consumption_in_kwh', 6),
-            ('off_peak_consumption_in_kwh', 6),
-            ('peak_measured_demand_in_kw', 6),
-            ('off_peak_measured_demand_in_kw', 6),
-        ]:
-            value = row.get(field, "")
-            if len(value) > max_length:
-                errors[field] = True
-            else:
-                errors[field] = False
-
-        if models.EnergyBill.check_energy_bill_month_year(consumer_unit_id, date):
-            errors['date'] = True
-
-        errors['dateNotCoveredByContract'] = not models.EnergyBill.check_energy_bill_covered_by_contract(
-            consumer_unit_id, date)
-
-        return errors, date
-
-    def process_csv_row(self, row, index, consumer_unit_id):
-        row_errors, date = self.validate_csv_row(row, consumer_unit_id)
-        return row_errors, date
-
     @swagger_auto_schema(method='post')
     @action(detail=False, methods=['post'], url_path='upload')
     def upload_csv(self, request, *args, **kwargs):
         errors = []
         energy_bill_data = []
-        date_list = []
-        duplicate_dates = []
-
         serializer = serializers.CSVFileSerializer(data=request.data)
+        if(not serializer.is_valid()):
+            return Response(serializer.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-        if serializer.is_valid():
-            csv_file = serializer.validated_data['csv_file']
-            decoded_file = TextIOWrapper(csv_file.file, encoding='utf-8')
-            csv_reader = csv.DictReader(decoded_file)
-
-            consumer_unit_id = request.data.get('consumer_unit_id')
-
-            if not consumer_unit_id:
-                return Response({'errorsMsg': {'consumer_unit_id': True}}, status=status.HTTP_400_BAD_REQUEST)
-
-            for row in csv_reader:
-                date = row.get('date').strip()
-                if date in date_list:
-                    if date not in duplicate_dates:
-                        duplicate_dates.append(date)
-
-                else:
-                    date_list.append(date)
-
-            decoded_file.seek(0)
-            csv_reader = csv.DictReader(decoded_file)
-
-            seen_dates = set()
-
-            for index, row in enumerate(csv_reader):
-                row_errors, date = self.process_csv_row(
-                    row, index, consumer_unit_id)
-
-                is_duplicate_date_csv = str(date) in duplicate_dates
-
-                if str(date) in seen_dates:
-                    continue
-
-                seen_dates.add(str(date))
-
-                energy_bill_row = {
-                    'consumer_unit': {'value': consumer_unit_id, 'error': False if consumer_unit_id else True},
-                    'date': {
-                        'value': date,
-                        'errorDoubleDateCsv': is_duplicate_date_csv,
-                        'errorDoubleDateRegistered': row_errors.get('date', False),
-                        'errorDateNotCoveredByContract': row_errors.get('dateNotCoveredByContract', False)
-                    },
-                    'invoice_in_reais': {'value': row.get('invoice_in_reais', ""), 'error': row_errors.get('invoice_in_reais', False)},
-                    'is_atypical': {'value': row.get('is_atypical', ""), 'error': False},
-                    'peak_consumption_in_kwh': {'value': row.get('peak_consumption_in_kwh', ""), 'error': row_errors.get('peak_consumption_in_kwh', False)},
-                    'off_peak_consumption_in_kwh': {'value': row.get('off_peak_consumption_in_kwh', ""), 'error': row_errors.get('off_peak_consumption_in_kwh', False)},
-                    'peak_measured_demand_in_kw': {'value': row.get('peak_measured_demand_in_kw', ""), 'error': row_errors.get('peak_measured_demand_in_kw', False)},
-                    'off_peak_measured_demand_in_kw': {'value': row.get('off_peak_measured_demand_in_kw', ""), 'error': row_errors.get('off_peak_measured_demand_in_kw', False)}
-                }
-
-                energy_bill_data.append(energy_bill_row)
-
-            return Response({'data': energy_bill_data}, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        energy_bill_data = services.ContractServices().get_file_errors(serializer.validated_data["file"], request.data.get('consumer_unit_id'))
+        return Response({'data': energy_bill_data}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'], url_path='download-csv-model')
     def download_csv_model(self, request):
         file_path = os.path.join(
             settings.BASE_DIR, 'docs', 'modelo_importar_tarifas.csv')
+
+        if os.path.exists(file_path):
+            return FileResponse(open(file_path, 'rb'), as_attachment=True, filename=os.path.basename(file_path))
+        else:
+            return Response("Document does not exist", status=400)
+
+    @action(detail=False, methods=['get'], url_path='download-xslx-model')
+    def download_xslx_model(self, request):
+        file_path = os.path.join(
+            settings.BASE_DIR, 'docs', 'modelo_importar_tarifas_xslx.xslx')
 
         if os.path.exists(file_path):
             return FileResponse(open(file_path, 'rb'), as_attachment=True, filename=os.path.basename(file_path))

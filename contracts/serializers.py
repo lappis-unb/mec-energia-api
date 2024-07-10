@@ -2,6 +2,7 @@ from rest_framework import serializers
 from . import models
 from universities.models import ConsumerUnit, Contract
 from tariffs.models import Distributor
+from contracts.validators import CsvFileValidator
 
 
 class ContractSerializer(serializers.HyperlinkedModelSerializer):
@@ -99,4 +100,10 @@ class EnergyBillListSerializerForDocs(serializers.Serializer):
 
 
 class CSVFileSerializer(serializers.Serializer):
-    csv_file = serializers.FileField()
+    file = serializers.FileField()
+    consumer_unit_id = serializers.IntegerField()
+
+    def validate_file(self, file): 
+        validator = CsvFileValidator()
+        df = validator(file)
+        return df
