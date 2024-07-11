@@ -33,7 +33,7 @@ class Authentication(ObtainAuthToken):
             serializer.is_valid(raise_exception=True)
             user = serializer.validated_data['user']
 
-            if not user.account_password_status in ['OK', 'normal_reset']:
+            if not user.account_password_status in ['OK', 'user_reset']:
                 raise Exception('Usuário não pode fazer login no sistema')
             
             try:
@@ -160,8 +160,6 @@ class Password():
         try:
             user = CustomUser.search_user_by_email(email = email)
             
-            token = Password.generate_password_token(user)
-            
             user.account_password_status = 'admin_reset'
             user.save()
 
@@ -169,6 +167,7 @@ class Password():
 
             Authentication._invalid_sessions_tokens(user)
 
+            token = Password.generate_password_token(user)
             link = Password.generate_link_to_reset_password(user, token, 'admin_reset')
             
             send_email_reset_password_by_admin(user.first_name, user.email, link)
@@ -179,10 +178,8 @@ class Password():
         try:
             user = CustomUser.search_user_by_email(email = email)
 
-            user.account_password_status = 'normal_reset'
+            user.account_password_status = 'user_reset'
             user.save()
-
-            Authentication._invalid_sessions_tokens(user)
 
             token = Password.generate_password_token(user)
             link = Password.generate_link_to_reset_password(user, token, 'user_reset')
@@ -250,11 +247,13 @@ class ResetPassword(generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
         try:
             request_token = request.GET.get('token')
-            user = UserToken.get_user_by_token_and_set_invalid_tried(request_token)
 
+            user, code_token = UserToken.get_user_by_token_and_set_invalid_tried(request_token)
+            
             response = {
                 "status": EndpointsUtils.status_success,
-                "message": "Token válido",
+                "code": code_token,
+                "message": "Token válido" if code_token == 1 else "Novo email será enviado",
                 "email": user.email,
             }
                 

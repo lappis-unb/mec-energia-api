@@ -56,14 +56,15 @@ class UserToken(models.Model):
             user_token = UserToken.objects.get(token = token)
 
             if not user_token.is_valid_token:
-                user_token.invalid_tried_at = timezone.now()
-                user_token.save()
+                if not user_token.invalid_tried_at:
+                    user_token.invalid_tried_at = timezone.now()
+                    user_token.save()
                 
-                raise Exception('Token inválido')
+                return user_token.user, 2
 
-            return user_token.user
+            return user_token.user, 1
         except UserToken.DoesNotExist:
-            raise Exception('Token já utilizado ou não existe')
+            raise Exception('Token não existe ou já utilizado')
 
     @classmethod
     def get_enable_user_token_by_user(cls, user):
