@@ -124,6 +124,9 @@ class EnergyBillUtils:
         peak_consumption = energy_bill.peak_consumption_in_kwh
         peak_measured_demand = energy_bill.peak_measured_demand_in_kw
         
+        ## retomar essa lógica quando retirar valores zerados do seed
+        return True
+        
         if (off_peak_consumption and off_peak_consumption == 0) or (off_peak_measured_demand and off_peak_consumption == 0) or (peak_consumption and  peak_consumption == 0) or (peak_measured_demand and peak_measured_demand == 0):
             return False
         return True
