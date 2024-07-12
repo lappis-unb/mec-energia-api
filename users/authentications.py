@@ -198,7 +198,7 @@ class Password():
             token = Password.generate_password_token(user)
             link = Password.generate_link_to_reset_password(user, token, 'first_access')
             
-            send_email_first_access_password(user.first_name, user.university.name, user.email, link)
+            send_email_first_access_password(user.first_name, user.university.acronym, user.email, link)
         except Exception as error:
             raise Exception('Send email first access password: ' + str(error))
 
