@@ -55,6 +55,9 @@ class UserToken(models.Model):
         try:
             user_token = UserToken.objects.get(token = token)
 
+            if user_token.user.account_password_status == 'OK':
+                raise Exception('Usuário já tem uma senha de acesso')
+
             if not user_token.is_valid_token:
                 if not user_token.invalid_tried_at:
                     user_token.invalid_tried_at = timezone.now()
