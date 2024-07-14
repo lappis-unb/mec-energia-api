@@ -1,11 +1,8 @@
 from django.contrib.auth.base_user import BaseUserManager
 from django.utils.translation import gettext_lazy as _
 
-from mec_energia import settings
-
 from . import models
 
-from utils.user.authentication import generate_random_password
 from utils.user.user_type_util import UserType
 
 class CustomUserManager(BaseUserManager):

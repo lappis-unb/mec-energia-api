@@ -20,6 +20,92 @@ from mec_energia import settings
 code_password_token_ok = 1 # Usuário tem um Password Token válido
 code_password_token_expired = 2 # Email seja agendado com um novo Password Token
 
+class ResetPasswordByAdmin(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        request_user = request.user
+
+        if request_user.type not in ['super_user', 'university_admin']:
+            raise Exception('Esse usuário não tem permissão para executar essa ação')
+
+        user_id = int(request.GET.get('user_id'))
+        user_for_reset = CustomUser.search_user_by_id(user_id)
+
+        if request_user.id == user_for_reset.id:
+            raise Exception('Utilize o esqueci minha senha')
+        
+        Password.start_reset_password_by_admin_process(user_for_reset.email)
+
+        return Response({"message": "Enviado"})
+
+
+@authentication_classes([])
+@permission_classes([])
+class ResetPassword(generics.GenericAPIView):
+    @swagger_auto_schema(query_serializer=serializers.ResetPasswordParamsSerializer,
+                         responses={200: serializers.ResetPasswordParamsForDocs})
+    def post(self, request, *args, **kwargs):
+        try:
+            request_user_email = request.GET.get('email')
+
+            Password.start_reset_password_process(request_user_email)
+
+            response = EndpointsUtils.create_message_endpoint_response(
+                        status = EndpointsUtils.status_success, 
+                        message = "O email foi enviado para o usuário com link de redefinição de senha")
+
+            return Response(response, status.HTTP_200_OK)
+        except Exception as error:
+            response = EndpointsUtils.create_message_endpoint_response(
+                        status = EndpointsUtils.status_error,
+                        message = str(error))
+
+            return Response(response, status.HTTP_400_BAD_REQUEST)
+    
+    def get(self, request, *args, **kwargs):
+        try:
+            request_token = request.GET.get('token')
+
+            user, code_token = UserToken.get_user_by_token_and_set_invalid_tried(request_token)
+            
+            response = {
+                "status": EndpointsUtils.status_success,
+                "code": code_token,
+                "message": "Token válido" if code_token == code_password_token_ok else "Novo email será enviado",
+                "email": user.email,
+            }
+                
+            return Response(response, status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"detail": f"Error: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@authentication_classes([])
+@permission_classes([])
+class ConfirmResetPassword(generics.GenericAPIView):
+    @swagger_auto_schema(request_body=serializers.ConfirmPasswordBodySerializer,
+                         responses={200: serializers.ResetPasswordParamsForDocs})
+    def post(self, request, *args, **kwargs):
+        try:
+            request_user_new_password = request.data['user_new_password']
+            request_user_reset_password_token = request.data['user_token']
+
+            Password.change_user_password(request_user_new_password, request_user_reset_password_token)
+
+            response = EndpointsUtils.create_message_endpoint_response(
+                        status = EndpointsUtils.status_success, 
+                        message = "User password has been changed")
+
+            return Response(response, status.HTTP_200_OK)
+        except Exception as error:
+            response = EndpointsUtils.create_message_endpoint_response(
+                        status = EndpointsUtils.status_error,
+                        message = str(error))
+
+            return Response(response, status.HTTP_400_BAD_REQUEST)
+
+
 class Password():
     def set_password_user(user, password, is_seed_user):
         if settings.ENVIRONMENT not in ['development', 'production']:
@@ -115,89 +201,3 @@ class Password():
 
     def _invalid_all_generated_password_tokens(user):
         UserToken.objects.filter(user=user).delete()
-
-
-class ResetPasswordByAdmin(generics.GenericAPIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, *args, **kwargs):
-        request_user = request.user
-
-        if request_user.type not in ['super_user', 'university_admin']:
-            raise Exception('Esse usuário não tem permissão para executar essa ação')
-
-        user_id = int(request.GET.get('user_id'))
-        user_for_reset = CustomUser.search_user_by_id(user_id)
-
-        if request_user.id == user_for_reset.id:
-            raise Exception('Utilize o esqueci minha senha')
-        
-        Password.send_email_reset_password_by_admin(user_for_reset.email)
-
-        return Response({"message": "Enviado"})
-
-
-@authentication_classes([])
-@permission_classes([])
-class ResetPassword(generics.GenericAPIView):
-    @swagger_auto_schema(query_serializer=serializers.ResetPasswordParamsSerializer,
-                         responses={200: serializers.ResetPasswordParamsForDocs})
-    def post(self, request, *args, **kwargs):
-        try:
-            request_user_email = request.GET.get('email')
-
-            Password.send_email_reset_password(request_user_email)
-
-            response = EndpointsUtils.create_message_endpoint_response(
-                        status = EndpointsUtils.status_success, 
-                        message = "O email foi enviado para o usuário com link de redefinição de senha")
-
-            return Response(response, status.HTTP_200_OK)
-        except Exception as error:
-            response = EndpointsUtils.create_message_endpoint_response(
-                        status = EndpointsUtils.status_error,
-                        message = str(error))
-
-            return Response(response, status.HTTP_400_BAD_REQUEST)
-    
-    def get(self, request, *args, **kwargs):
-        try:
-            request_token = request.GET.get('token')
-
-            user, code_token = UserToken.get_user_by_token_and_set_invalid_tried(request_token)
-            
-            response = {
-                "status": EndpointsUtils.status_success,
-                "code": code_token,
-                "message": "Token válido" if code_token == code_password_token_ok else "Novo email será enviado",
-                "email": user.email,
-            }
-                
-            return Response(response, status.HTTP_200_OK)
-        except Exception as e:
-            return Response({"detail": f"Error: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
-
-
-@authentication_classes([])
-@permission_classes([])
-class ConfirmResetPassword(generics.GenericAPIView):
-    @swagger_auto_schema(request_body=serializers.ConfirmPasswordBodySerializer,
-                         responses={200: serializers.ResetPasswordParamsForDocs})
-    def post(self, request, *args, **kwargs):
-        try:
-            request_user_new_password = request.data['user_new_password']
-            request_user_reset_password_token = request.data['user_token']
-
-            Password.change_user_password(request_user_new_password, request_user_reset_password_token)
-
-            response = EndpointsUtils.create_message_endpoint_response(
-                        status = EndpointsUtils.status_success, 
-                        message = "User password has been changed")
-
-            return Response(response, status.HTTP_200_OK)
-        except Exception as error:
-            response = EndpointsUtils.create_message_endpoint_response(
-                        status = EndpointsUtils.status_error,
-                        message = str(error))
-
-            return Response(response, status.HTTP_400_BAD_REQUEST)
