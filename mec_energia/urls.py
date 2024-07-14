@@ -4,7 +4,8 @@ from django.urls import include, path
 from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 
-from users.authentications import Authentication, Logout, ResetPasswordByAdmin, ResetPassword, ConfirmResetPassword
+from users.authentications import Authentication, Logout
+from users.password import ResetPasswordByAdmin, ResetPassword, ConfirmResetPassword
 
 from universities.urls import router as universities_router
 from contracts.urls import router as contracts_router

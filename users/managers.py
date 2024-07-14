@@ -10,7 +10,7 @@ from utils.user.user_type_util import UserType
 
 class CustomUserManager(BaseUserManager):
     def create(self, email, password = None, **extra_fields):
-        from .authentications import Password
+        from .password import Password
 
         try:
             if not email:
@@ -25,19 +25,8 @@ class CustomUserManager(BaseUserManager):
                 user.type = UserType.get_user_type_by_model(self.model)
             
             UserType.is_valid_user_type(user.type, self.model)
-            
-            if settings.ENVIRONMENT in ['production', 'development']:
-                if user.type in models.CustomUser.university_user_types and not is_seed_user:
-                    user.set_password(generate_random_password())
-                    user.save()
 
-                    Password.send_email_first_access_password(user)
-                else:
-                    user.set_password(password)
-                    user.save()
-            else:
-                user.set_password(password)
-                user.save()
+            Password.set_password_user(user, password, is_seed_user)
 
             return user
         except Exception as error:
