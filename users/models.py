@@ -38,6 +38,11 @@ class UserToken(models.Model):
         expiration_time = self.created_at + timedelta(minutes = settings.RESET_PASSWORD_TOKEN_TIMEOUT)
         return timezone.now() < expiration_time
     
+    def set_invalid_tried_datetime_to_send_new_email(self):
+        if not self.invalid_tried_at:
+            self.invalid_tried_at = timezone.now()
+            self.save()
+    
     @classmethod
     def get_user_by_token(cls, token):
         try:
@@ -52,20 +57,21 @@ class UserToken(models.Model):
         
     @classmethod
     def get_user_by_token_and_set_invalid_tried(cls, token):
+        from .authentications import code_password_token_ok, code_password_token_expired
+
         try:
             user_token = UserToken.objects.get(token = token)
 
             if user_token.user.account_password_status == 'OK':
                 raise Exception('Usuário já tem uma senha de acesso')
 
-            if not user_token.is_valid_token:
-                if not user_token.invalid_tried_at:
-                    user_token.invalid_tried_at = timezone.now()
-                    user_token.save()
+            if user_token.is_valid_token:
+                return user_token.user, code_password_token_ok
+            else:
+                user_token.set_invalid_tried_datetime_to_send_new_email()
                 
-                return user_token.user, 2
+                return user_token.user, code_password_token_expired
 
-            return user_token.user, 1
         except UserToken.DoesNotExist:
             raise Exception('Token não existe ou já utilizado')
 

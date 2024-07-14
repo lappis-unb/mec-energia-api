@@ -202,6 +202,7 @@ class Password():
         except Exception as error:
             raise Exception('Send email first access password: ' + str(error))
 
+
 class ResetPasswordByAdmin(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
@@ -221,6 +222,9 @@ class ResetPasswordByAdmin(generics.GenericAPIView):
 
         return Response({"message": "Enviado"})
 
+
+code_password_token_ok = 1 # Usuário tem um Password Token válido
+code_password_token_expired = 2 # Email seja agendado com um novo Password Token
 @authentication_classes([])
 @permission_classes([])
 class ResetPassword(generics.GenericAPIView):
@@ -253,13 +257,14 @@ class ResetPassword(generics.GenericAPIView):
             response = {
                 "status": EndpointsUtils.status_success,
                 "code": code_token,
-                "message": "Token válido" if code_token == 1 else "Novo email será enviado",
+                "message": "Token válido" if code_token == code_password_token_ok else "Novo email será enviado",
                 "email": user.email,
             }
                 
             return Response(response, status.HTTP_200_OK)
         except Exception as e:
             return Response({"detail": f"Error: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+
 
 @authentication_classes([])
 @permission_classes([])
