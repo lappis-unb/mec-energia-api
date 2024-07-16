@@ -57,7 +57,7 @@ class UserToken(models.Model):
         
     @classmethod
     def get_user_by_token_and_set_invalid_tried(cls, token):
-        from .authentications import code_password_token_ok, code_password_token_expired
+        from .password import code_password_token_ok, code_password_token_expired
 
         try:
             user_token = UserToken.objects.get(token = token)
@@ -183,7 +183,7 @@ class CustomUser(AbstractUser):
             raise Exception('User does not exist')
 
     def change_user_password_by_reset_password_token(self, new_password, reset_password_token):
-        from .authentications import Password
+        from .password import Password
 
         try:
             Password._get_user_by_token(reset_password_token)
