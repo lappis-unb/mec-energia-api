@@ -288,10 +288,10 @@ class EnergyBillViewSet(viewsets.ModelViewSet):
         else:
             return Response("Document does not exist", status=400)
 
-    @action(detail=False, methods=['get'], url_path='download-xslx-model')
-    def download_xslx_model(self, request):
+    @action(detail=False, methods=['get'], url_path='download-xlsx-model')
+    def download_xlsx_model(self, request):
         file_path = os.path.join(
-            settings.BASE_DIR, 'docs', 'modelo_importar_tarifas_xslx.xslx')
+            settings.BASE_DIR, 'docs', 'modelo_importar_tarifas.xlsx')
 
         if os.path.exists(file_path):
             return FileResponse(open(file_path, 'rb'), as_attachment=True, filename=os.path.basename(file_path))
