@@ -27,7 +27,7 @@ class ContractServices:
                 'consumer_unit': {'value': consumer_unit_id, 'error': False if consumer_unit_id else True},
                 'date': {
                     'value': date,
-                    'errors': row_errors["date"]
+                    'errors': row_errors.get('date')
                 },
                 'invoice_in_reais': {'value': "" if math.isnan(row.get('invoice_in_reais')) else row.get('invoice_in_reais', ""), 'errors': row_errors.get('invoice_in_reais')},
                 'peak_consumption_in_kwh': {'value': row.get('peak_consumption_in_kwh', ""), 'errors': row_errors.get('peak_consumption_in_kwh')},
@@ -49,7 +49,7 @@ class ContractServices:
         elif models.EnergyBill.check_energy_bill_month_year(consumer_unit_id, date):
             errors['date'].append(AlreadyHasEnergyBill)
 
-        elif models.EnergyBill.check_energy_bill_covered_by_contract(
+        elif not models.EnergyBill.check_energy_bill_covered_by_contract(
             consumer_unit_id, date):
             errors["date"].append(DateNotCoverByContractError)
 
