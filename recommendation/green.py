@@ -4,6 +4,7 @@ from numpy import ceil as roundup
 
 
 from tariffs.models import GreenTariff
+from mec_energia.settings import NEW_RESOLUTION_MINIMUM_DEMAND
 
 class GreenPercentileResult:
     def __init__(self, p: 'dict[str, DataFrame]', s: DataFrame):
@@ -40,6 +41,9 @@ class GreenPercentileCalculator():
             # Calcula percentil fora de pico
             off_peak_demand_in_kw = self \
                 .consumption_history.off_peak_measured_demand_in_kw.quantile(p)
+
+            # Valida com a demanda mínima para contratação
+            off_peak_demand_in_kw = NEW_RESOLUTION_MINIMUM_DEMAND if off_peak_demand_in_kw < NEW_RESOLUTION_MINIMUM_DEMAND else off_peak_demand_in_kw
             percentiles[p_str].off_peak_demand_in_kw = [off_peak_demand_in_kw]*self.history_length
 
             # Ultrapassagem = max(0, demanda_medida - demanda_percentil)
@@ -64,12 +68,6 @@ class GreenPercentileCalculator():
             # Calcular totais de valor
             percentiles[p_str].total_in_reais = percentiles[p_str].demand_total_cost_in_reais.sum()
         return percentiles
-
-    def __calculate_percentile(self, percentiles: 'dict[str, DataFrame]', p: float, p_str: str):
-        column = 'off_peak_demand_in_kw'
-        demand_percentile = self \
-            .consumption_history[f'measured_{column}'].quantile(p)
-        percentiles[p_str][column] = [demand_percentile]*self.history_length
 
     def __calculate_summary(self, percentiles: 'dict[str, DataFrame]'):
         summary = DataFrame(columns=self.SUMMARY_HEADERS)

@@ -96,14 +96,16 @@ blue = {
     "peak_te_in_reais_per_mwh": 413.03,
     "off_peak_tusd_in_reais_per_kw": 31.53,
     "off_peak_tusd_in_reais_per_mwh": 117.13,
-    "off_peak_te_in_reais_per_mwh": 260.02
+    "off_peak_te_in_reais_per_mwh": 260.02,
+    "power_generation_tusd_in_reais_per_kw": 10.00
 }
 green = {
     "peak_tusd_in_reais_per_mwh": 2280.15,
     "peak_te_in_reais_per_mwh": 413.03,
     "off_peak_tusd_in_reais_per_mwh": 117.13,
     "off_peak_te_in_reais_per_mwh": 260.02,
-    "na_tusd_in_reais_per_kw": 31.53
+    "na_tusd_in_reais_per_kw": 31.53,
+    "power_generation_tusd_in_reais_per_kw": 10.00
 }
 
 a3_start_date = date(2022,10,2)

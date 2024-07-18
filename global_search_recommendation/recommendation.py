@@ -21,7 +21,15 @@ class Recommendation:
         result.tariff_flag = self.tariff.flag
         result.peak_demand_in_kw, result.off_peak_demand_in_kw = self.values[0], self.values[1]
         result.frame = StaticGetters.get_recommendation_frame(self.domain.consumption_history, self.values, self.tariff)
-        
+
+        cur_demand_values = (self.domain.current_contract.peak_contracted_demand_in_kw, self.domain.current_contract.off_peak_contracted_demand_in_kw)
+        result = StaticGetters.validate_recommendation_with_power_generation(
+            result, 
+            self.domain.current_tariff.power_generation_tusd_in_reais_per_kw, 
+            self.tariff.power_generation_tusd_in_reais_per_kw,
+            cur_demand_values,
+            self.domain.consumer_unit.total_installed_power)
+   
         result.frame.absolute_difference = \
             self.current_contract_values.cost_in_reais - result.frame.contract_cost_in_reais
 

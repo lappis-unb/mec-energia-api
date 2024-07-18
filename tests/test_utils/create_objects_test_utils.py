@@ -75,6 +75,7 @@ def create_test_blue_tariff(dict: dict, distributor: Distributor) -> Tariff:
         off_peak_tusd_in_reais_per_kw = dict['off_peak_tusd_in_reais_per_kw'],
         off_peak_tusd_in_reais_per_mwh = dict['off_peak_tusd_in_reais_per_mwh'],
         off_peak_te_in_reais_per_mwh = dict['off_peak_te_in_reais_per_mwh'],
+        power_generation_tusd_in_reais_per_kw = dict['power_generation_tusd_in_reais_per_kw'],
         distributor_id = distributor.id,
         flag = Tariff.BLUE
     )
@@ -91,6 +92,7 @@ def create_test_green_tariff(dict: dict, distributor: Distributor) -> Tariff:
         off_peak_tusd_in_reais_per_mwh = dict['off_peak_tusd_in_reais_per_mwh'],
         off_peak_te_in_reais_per_mwh = dict['off_peak_te_in_reais_per_mwh'],
         na_tusd_in_reais_per_kw = dict['na_tusd_in_reais_per_kw'],
+        power_generation_tusd_in_reais_per_kw = dict['power_generation_tusd_in_reais_per_kw'],
         distributor_id = distributor.id,
         flag = Tariff.GREEN
     )
