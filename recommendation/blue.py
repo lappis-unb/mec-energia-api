@@ -3,6 +3,7 @@ from pandas import DataFrame
 from numpy import ceil as roundup
 
 from tariffs.models import BlueTariff
+from mec_energia.settings import NEW_RESOLUTION_MINIMUM_DEMAND
 
 
 class BluePercentileResult:
@@ -40,12 +41,18 @@ class BluePercentileCalculator():
             # Calcula percentil em pico
             peak_demand_in_kw_percentile = self \
                 .consumption_history.peak_measured_demand_in_kw.quantile(p)
+
+            # Valida com a demanda mínima para contratação
+            peak_demand_in_kw_percentile = NEW_RESOLUTION_MINIMUM_DEMAND if peak_demand_in_kw_percentile < NEW_RESOLUTION_MINIMUM_DEMAND else peak_demand_in_kw_percentile
             percentiles[p_str].peak_demand_in_kw = [peak_demand_in_kw_percentile]*self.history_length
 
             # Calcula percentil fora de pico
             off_peak_demand_in_kw_percentile = self\
                 .consumption_history.off_peak_measured_demand_in_kw.quantile(p)
-            percentiles[p_str].off_peak_demand_in_kw = off_peak_demand_in_kw_percentile
+            
+            # Valida com a demanda mínima para contratação
+            off_peak_demand_in_kw_percentile = NEW_RESOLUTION_MINIMUM_DEMAND if off_peak_demand_in_kw_percentile < NEW_RESOLUTION_MINIMUM_DEMAND else off_peak_demand_in_kw_percentile
+            percentiles[p_str].off_peak_demand_in_kw = [off_peak_demand_in_kw_percentile]*self.history_length
 
             # Ultrapassagem = max(0, demanda_medida - demanda_percentil)
             percentiles[p_str].exceeded_peak_demand_in_kw = \

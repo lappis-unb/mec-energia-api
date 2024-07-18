@@ -61,8 +61,12 @@ class Domain:
                              'peak_measured_demand_in_kw','off_peak_measured_demand_in_kw',
                              'contract_peak_demand_in_kw', 'contract_off_peak_demand_in_kw']].values.astype(float)
 
-        self.consumption_cost_on_blue = StaticGetters.get_comsuption_cost(self.consumption_history, self.blue).sum()
-        self.consumption_cost_on_green = StaticGetters.get_comsuption_cost(self.consumption_history, self.green).sum()
+        if len(self.errors) == 0:
+            self.consumption_cost_on_blue = StaticGetters.get_comsuption_cost(self.consumption_history, self.blue).sum()
+            self.consumption_cost_on_green = StaticGetters.get_comsuption_cost(self.consumption_history, self.green).sum()
+        else:
+            return len(self.errors)            
+        
         return None
 
     def green_objective_func(self, demands) -> .0 :

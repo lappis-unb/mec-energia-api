@@ -174,6 +174,7 @@ class BlueTariff(DataTariff):
     off_peak_tusd_in_reais_per_kw: float
     off_peak_tusd_in_reais_per_mwh: float
     off_peak_te_in_reais_per_mwh: float
+    power_generation_tusd_in_reais_per_kw: float
 
 @dataclass
 class GreenTariff(DataTariff):
@@ -182,6 +183,7 @@ class GreenTariff(DataTariff):
     off_peak_tusd_in_reais_per_mwh: float
     off_peak_te_in_reais_per_mwh: float
     na_tusd_in_reais_per_kw: float
+    power_generation_tusd_in_reais_per_kw: float
 
 
 class Tariff(models.Model):
@@ -286,6 +288,12 @@ class Tariff(models.Model):
         null=True,
         blank=True,
     )
+    power_generation_tusd_in_reais_per_kw = models.DecimalField(
+        decimal_places=2,
+        max_digits=6,
+        null=True,
+        blank=True,
+    )
 
     def is_blue(self) -> bool:
         return self.flag == Tariff.BLUE
@@ -303,6 +311,7 @@ class Tariff(models.Model):
             off_peak_tusd_in_reais_per_kw=float(self.off_peak_tusd_in_reais_per_kw),
             off_peak_tusd_in_reais_per_mwh=float(self.off_peak_tusd_in_reais_per_mwh),
             off_peak_te_in_reais_per_mwh=float(self.off_peak_te_in_reais_per_mwh),
+            power_generation_tusd_in_reais_per_kw=float(self.power_generation_tusd_in_reais_per_kw),
         )
 
     def as_green_tariff(self) -> GreenTariff:
@@ -314,6 +323,7 @@ class Tariff(models.Model):
             off_peak_tusd_in_reais_per_mwh=float(self.off_peak_tusd_in_reais_per_mwh),
             off_peak_te_in_reais_per_mwh=float(self.off_peak_te_in_reais_per_mwh),
             na_tusd_in_reais_per_kw=float(self.na_tusd_in_reais_per_kw),
+            power_generation_tusd_in_reais_per_kw=float(self.power_generation_tusd_in_reais_per_kw),
         )
 
 

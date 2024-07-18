@@ -1,9 +1,13 @@
 from pandas import DataFrame
 
+from mec_energia.settings import NEW_RESOLUTION_MINIMUM_DEMAND
 from recommendation_commons.headers import CONSUMPTION_HISTORY_HEADERS, CURRENT_CONTRACT_HEADERS, RECOMMENDATION_FRAME_HEADERS
 from tariffs.models import Tariff
 from universities.models import ConsumerUnit
 from contracts.models import Contract
+from recommendation_commons.recommendation_result import RecommendationResult
+
+import decimal
 
 class StaticGetters:
 
@@ -91,16 +95,8 @@ class StaticGetters:
         current_contract.consumption_cost_in_reais = cls.get_comsuption_cost(history, tariff)
         demand_values = (history['contract_peak_demand_in_kw'], history['contract_off_peak_demand_in_kw'])
         current_contract.demand_cost_in_reais = cls.get_demand_cost(tariff, history, demand_values)
-        current_contract.cost_in_reais = \
-            current_contract.consumption_cost_in_reais + current_contract.demand_cost_in_reais
-
-        current_contract.percentage_consumption = \
-            current_contract.consumption_cost_in_reais / current_contract.cost_in_reais
-
-        current_contract.percentage_demand = \
-            current_contract.demand_cost_in_reais / current_contract.cost_in_reais
        
-        return current_contract
+        return cls.atualize_frames_percentages(current_contract)
     
     @classmethod
     def get_recommendation_frame(cls, history: DataFrame, values: tuple, tariff: Tariff):
@@ -110,14 +106,42 @@ class StaticGetters:
         recommendation_frame.off_peak_demand_in_kw = values[1]
         recommendation_frame.consumption_cost_in_reais = cls.get_comsuption_cost(history, tariff)
         recommendation_frame.demand_cost_in_reais = cls.get_demand_cost(tariff, history, values)
-
-        recommendation_frame.contract_cost_in_reais = \
-            recommendation_frame.consumption_cost_in_reais + recommendation_frame.demand_cost_in_reais
-
-        recommendation_frame.percentage_consumption = \
-            recommendation_frame.consumption_cost_in_reais / recommendation_frame.contract_cost_in_reais
-
-        recommendation_frame.percentage_demand = \
-            recommendation_frame.demand_cost_in_reais / recommendation_frame.contract_cost_in_reais
        
-        return recommendation_frame
+        return cls.atualize_frames_percentages(recommendation_frame)
+    
+    @classmethod
+    def validate_recommendation_with_power_generation(cls, recommendation: RecommendationResult, current_tusd_g, rec_tusd_g, cur_demand_values: tuple, instaled_power_supply = None):
+        if instaled_power_supply:
+            rec_demand = decimal.Decimal(recommendation.off_peak_demand_in_kw) if recommendation.tariff_flag == Tariff.GREEN \
+                else decimal.Decimal(max(recommendation.peak_demand_in_kw, recommendation.off_peak_demand_in_kw))
+            if rec_demand < instaled_power_supply:
+                recommendation.frame['demand_cost_in_reais'] += float((instaled_power_supply - rec_demand) * rec_tusd_g)
+                recommendation.current_contract['demand_cost_in_reais'] += float((instaled_power_supply - max(cur_demand_values)) * current_tusd_g)
+
+                recommendation.frame = cls.atualize_frames_percentages(recommendation.frame)
+                recommendation.current_contract = cls.atualize_frames_percentages(recommendation.current_contract)
+        
+        return recommendation
+                
+    @staticmethod
+    def atualize_frames_percentages(frame: DataFrame):
+        if 'contract_cost_in_reais' in frame.columns:
+            frame.contract_cost_in_reais = \
+                frame.consumption_cost_in_reais + frame.demand_cost_in_reais
+
+            frame.percentage_consumption = \
+                frame.consumption_cost_in_reais / frame.contract_cost_in_reais
+
+            frame.percentage_demand = \
+                frame.demand_cost_in_reais / frame.contract_cost_in_reais
+        else:
+            frame.cost_in_reais = \
+                frame.consumption_cost_in_reais + frame.demand_cost_in_reais
+
+            frame.percentage_consumption = \
+                frame.consumption_cost_in_reais / frame.cost_in_reais
+
+            frame.percentage_demand = \
+                frame.demand_cost_in_reais / frame.cost_in_reais
+            
+        return frame

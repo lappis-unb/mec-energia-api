@@ -18,9 +18,11 @@ def test_recommendation(code: str):
         data.current_tariff_flag,
         data.blue_tariff,
         data.green_tariff,
+        'A4',
+        None
     )
 
-    result = sut.calculate()
+    result = sut.calculate(None)
 
     assert_frame_equal(
         data.expected_current_contract,

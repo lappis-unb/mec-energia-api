@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'contracts',
     'tariffs',
     'recommendation',
+    'global_search_recommendation',
 ]
 
 MIDDLEWARE = [
