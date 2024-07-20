@@ -10,16 +10,17 @@ class ContractUtils:
         #dd/mm/aaaa, mmm/aaaa, mm/aaaa
         if isinstance(energy_bill_date, datetime): 
             return energy_bill_date.date()
-
         try: 
             date_obj = arrow.get(energy_bill_date, [
                 "MMM/YYYY",         
                 "MM/YYYY",           
                 "MMM/YY",           
-                "YYYY/MM/DD"            
+                "DD/MM/YYYY", 
+                "YYYY-MM-DD", 
+                "YYYY-MM"
             ], locale='pt_br')
         except: 
-            return False
+            return energy_bill_date
 
         return date_obj.date()
 
