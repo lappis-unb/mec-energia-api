@@ -5,7 +5,9 @@ import csv
 from io import TextIOWrapper
 from collections import defaultdict
 from mec_energia.error_response_manage import * 
+import datetime
 import math
+from decimal import Decimal
 
 class ContractServices:  
     def get_file_errors(self, csv_reader, consumer_unit_id): 
@@ -19,20 +21,19 @@ class ContractServices:
                 row, index, consumer_unit_id)
 
             if str(date) in seen_dates:
-                row_errors["date"].append(DuplicatedDate)
+                row_errors["date"].append(DuplicatedDateError)
 
             seen_dates.add(str(date))
-
             energy_bill_row = {
                 'consumer_unit': {'value': consumer_unit_id, 'error': False if consumer_unit_id else True},
                 'date': {
                     'value': date,
                     'errors': row_errors.get('date')
                 },
-                'invoice_in_reais': {'value': "" if math.isnan(row.get('invoice_in_reais')) else row.get('invoice_in_reais', ""), 'errors': row_errors.get('invoice_in_reais')},
+                'invoice_in_reais': {'value': row.get('invoice_in_reais', ""), 'errors': row_errors.get('invoice_in_reais')},
                 'peak_consumption_in_kwh': {'value': row.get('peak_consumption_in_kwh', ""), 'errors': row_errors.get('peak_consumption_in_kwh')},
                 'off_peak_consumption_in_kwh': {'value': row.get('off_peak_consumption_in_kwh', ""), 'errors': row_errors.get('off_peak_consumption_in_kwh')},
-                'peak_measured_demand_in_kw': {'value': row.get('peak_measured_demand_in_kw', ""), 'errors': row_errors.get('peak_measured_demand_in_kw')},
+                'peak_measured_demand_in_kw': {'value': row.get('peak_measured_demand_in_kw', "") ,'errors': row_errors.get('peak_measured_demand_in_kw')},
                 'off_peak_measured_demand_in_kw': {'value': row.get('off_peak_measured_demand_in_kw', ""), 'errors': row_errors.get('off_peak_measured_demand_in_kw')}
             }
             energy_bill_data.append(energy_bill_row)
@@ -43,7 +44,7 @@ class ContractServices:
     def validate_csv_row(self, row, consumer_unit_id):
         errors = defaultdict(list)
         date = ContractUtils().validate_date(row["date"])
-        if(not date):
+        if(not isinstance(date, datetime.date)):
             errors["date"].append(FormatDateError)
 
         elif models.EnergyBill.check_energy_bill_month_year(consumer_unit_id, date):
@@ -61,10 +62,22 @@ class ContractServices:
             ('off_peak_measured_demand_in_kw', 6),
         ]:
             value = row.get(field, "")
-            if len(str(value)) > max_length:
-                errors[field].append(ValueMaxError)
+            if(isinstance(value, str)):
+                try: 
+                    value = value.replace(',', '.')
+                    value = float(value)
+                    if len(str(value)) > max_length:
+                        errors[field].append(EnergyBillValueError if field=='invoice_in_reais' else ValueMaxError)
+                except: 
+                    row[field] = value
+                    if(value != ""):
+                        errors[field].append(EnergyBillValueError if field=='invoice_in_reais' else ValueMaxError)
+                        continue
 
-        if math.isnan(row.get('invoice_in_reais')) or row.get('invoice_in_reais') == '':
+            if(math.isnan(value)):
+                row[field] = ""
+
+        if row.get('invoice_in_reais') == '':
             errors['invoice_in_reais'].append(EnergyBillValueError)
 
         return errors, date
