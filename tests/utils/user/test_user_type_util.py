@@ -88,3 +88,44 @@ def test_raise_exception_for_invalid_custom_user_and_valid_super_user_type():
         assert False
     except Exception:
         assert True
+
+def test_return_user_type_for_non_university_user_and_invalid_user_type():
+    # CT9
+    user_model = models.CustomUser  
+    user_type = 'invalid'
+
+    try:
+        UserType.is_valid_user_type(user_type, user_model)
+        assert False
+    except Exception:
+        assert True
+
+def test_return_user_type_for_non_university_user_and_valid_user_type():
+    # CT10
+    user_model = models.CustomUser  
+    user_type = models.CustomUser.all_user_types[0]
+    assert user_type == UserType.is_valid_user_type(user_type, user_model)
+
+def test_return_user_type_for_university_user_and_valid_user_type():
+    # CT11
+    user_model = models.UniversityUser
+    user_type = models.CustomUser.university_user_types[0]
+    assert user_type == UserType.is_valid_user_type(user_type, user_model)
+
+def test_return_user_type_for_custom_user_and_valid_super_user_type():
+    # CT12
+    user_model = models.CustomUser
+    user_type = models.CustomUser.super_user_type
+    assert user_type == UserType.is_valid_user_type(user_type, user_model)
+
+
+def test_raise_exception_for_non_custom_user_and_invalid_user_type():
+    # CT13
+    user_model = models.UniversityUser  
+    user_type = 'invalid'
+    
+    try:
+        UserType.is_valid_user_type(user_type, user_model)
+        assert False
+    except Exception:
+        assert True
