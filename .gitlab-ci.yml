@@ -21,6 +21,7 @@ variables:
   image: python:3.10.5
   before_script: 
     - cd $CI_PROJECT_DIR
+    - cp .env.dev .env  # Copy .env.dev to .env
     - pip install -U -r requirements.txt
   variables:
     DJANGO_SETTINGS_MODULE: mec_energia.settings
