@@ -179,8 +179,8 @@ class CustomUser(AbstractUser):
             user = cls.objects.get(email = email)
 
             return user
-        except ObjectDoesNotExist:
-            raise Exception('User does not exist')
+        except ObjectDoesNotExist as error:
+            raise error
 
     def change_user_password_by_reset_password_token(self, new_password, reset_password_token):
         from .authentications import Password
