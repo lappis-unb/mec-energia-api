@@ -51,14 +51,12 @@ class University(models.Model):
 class ConsumerUnit(models.Model):
     name = models.CharField(
         max_length=50,
-        unique=True,
         verbose_name=_('Nome'),
         help_text=_('Nome da Unidade Consumidora. Ex: Darcy Ribeiro')
     )
 
     code = models.CharField(
         max_length=30,
-        unique=True,
         verbose_name=_('Código da Unidade Consumidora'),
         help_text=_(
             'Cheque a conta de luz para obter o código da Unidade Consumidora. Insira apenas números')
@@ -92,6 +90,9 @@ class ConsumerUnit(models.Model):
     created_on = models.DateTimeField(
         auto_now_add=True
     )
+
+    class Meta:
+        unique_together = ['university', 'code', 'name']
 
     @property
     def current_contract(self) -> Contract:
