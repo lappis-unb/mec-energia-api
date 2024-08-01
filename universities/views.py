@@ -167,9 +167,11 @@ class ConsumerUnitViewSet(viewsets.ModelViewSet):
             return Response({'detail': f'{error}'}, status.HTTP_401_UNAUTHORIZED)
 
         try:
-            ConsumerUnit.create_consumer_unit_and_contract(data['consumer_unit'], data['contract'])
+            createdUC, createdContract = ConsumerUnit.create_consumer_unit_and_contract(data['consumer_unit'], data['contract'])
             
-            return Response({'Consumer Unit and Contract created'})
+            serializer = serializers.ConsumerUnitSerializer(createdUC, context={'request': request})
+
+            return Response(serializer.data, status.HTTP_200_OK)
         except Exception as error:
             raise Exception(str(error))
 
