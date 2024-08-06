@@ -35,7 +35,7 @@ class Domain:
 
         self.blue, self.green = StaticGetters.get_tariffs(self.current_contract.subgroup, self.distributor.id)
 
-        is_missing_tariff = self.blue == None or self.green == None
+        is_missing_tariff = self.blue == None or (self.current_contract.subgroup not in ['A2', 'A3'] and self.green == None)
         if is_missing_tariff:
             self.errors.append(TariffsNotFoundError)
         
@@ -54,7 +54,7 @@ class Domain:
         elif self.consumption_history_length + atypical_bills_count < IDEAL_ENERGY_BILLS_FOR_RECOMMENDATION:
             self.warnings.append(ErrorMensageParser.parse(PendingBillsWarnning, (pending_num, "fatura" if pending_num == 1 else "faturas")))
 
-        if not is_missing_tariff and (self.blue.end_date or self.green.end_date > date.today()):
+        if not is_missing_tariff and (self.blue.end_date < date.today() or (self.current_contract.subgroup not in ['A2', 'A3'] and self.green.end_date < date.today())):
             self.warnings.append(ExpiredTariffWarnning)
 
         self.base_consumption_history = self.consumption_history[['peak_consumption_in_kwh','off_peak_consumption_in_kwh',

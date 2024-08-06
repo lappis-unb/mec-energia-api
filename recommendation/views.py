@@ -47,7 +47,7 @@ class RecommendationViewSet(ViewSet):
         errors = []
         warnings = []
 
-        is_missing_tariff = blue == None or green == None
+        is_missing_tariff = blue == None or (contract.subgroup not in ['A2', 'A3'] and green == None)
         if is_missing_tariff:
             errors.append(TariffsNotFoundError)
 
@@ -64,7 +64,7 @@ class RecommendationViewSet(ViewSet):
         elif consumption_history_length + atypical_bills_count < IDEAL_ENERGY_BILLS_FOR_RECOMMENDATION:
             warnings.append(ErrorMensageParser.parse(PendingBillsWarnning, (pending_num, "fatura" if pending_num == 1 else "faturas")))
 
-        if not is_missing_tariff and (blue.end_date or green.end_date > date.today()):
+        if not is_missing_tariff and (blue.end_date < date.today() or (contract.subgroup not in ['A2', 'A3'] and green.end_date < date.today())):
             warnings.append(ExpiredTariffWarnning)
 
         calculator = None
