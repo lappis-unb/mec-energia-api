@@ -128,9 +128,9 @@ green = {
 }
 
 a1_start_date = date(2023,6,17)
-a1_end_date   = date(2023,5,12)
+a1_end_date   = date(2024,5,12)
 a3_start_date = date(2023,10,2)
-a3_end_date   = date(2023,10,5)
+a3_end_date   = date(2024,10,5)
 
 
 Tariff.objects.bulk_create([
