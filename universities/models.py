@@ -191,18 +191,19 @@ class ConsumerUnit(models.Model):
 
     @classmethod
     def edit_consumer_unit_and_contract(cls, data_consumer_unit, data_contract):
-
-        try:            
-            consumer_unit = ConsumerUnit.objects.filter(id=data_consumer_unit['consumer_unit_id']).update(
-                name = data_consumer_unit['name'],
-                code = data_consumer_unit['code'],
-                is_active = data_consumer_unit['is_active'],
-                total_installed_power = data_consumer_unit["total_installed_power"]
-            )
+        try:
+            consumer_unit = ConsumerUnit.objects.get(id=data_consumer_unit['consumer_unit_id'])
 
             if not consumer_unit:
                 raise Exception('Consumer Unit not exist')
             
+            consumer_unit.name = data_consumer_unit['name']
+            consumer_unit.code = data_consumer_unit['code']
+            consumer_unit.is_active = data_consumer_unit['is_active']
+            consumer_unit.total_installed_power = data_consumer_unit['total_installed_power']
+
+            consumer_unit.save()
+ 
             contract = Contract.objects.get(id=data_contract['contract_id'])
 
             if not contract:

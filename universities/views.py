@@ -181,9 +181,9 @@ class ConsumerUnitViewSet(viewsets.ModelViewSet):
 
         data = request.data
 
-        params_serializer = serializers.CreateConsumerUnitAndContractSerializerForDocs(data=request.data)
-        if not params_serializer.is_valid():
-            return Response(params_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # params_serializer = serializers.CreateConsumerUnitAndContractSerializerForDocs(data=request.data)
+        # if not params_serializer.is_valid():
+            #return Response(params_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             body_university_id = data['consumer_unit']['university']
@@ -205,9 +205,9 @@ class ConsumerUnitViewSet(viewsets.ModelViewSet):
 
         data = request.data
 
-        params_serializer = serializers.EditConsumerUnitCodeAndCreateContractSerializerForDocs(data=request.data)
-        if not params_serializer.is_valid():
-            return Response(params_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        #params_serializer = serializers.EditConsumerUnitCodeAndCreateContractSerializerForDocs(data=request.data)
+        #if not params_serializer.is_valid():
+            #return Response(params_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             body_consumer_unit_id = data['consumer_unit']['consumer_unit_id']
