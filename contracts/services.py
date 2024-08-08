@@ -62,20 +62,24 @@ class ContractServices:
             ('off_peak_measured_demand_in_kw', 6),
         ]:
             value = row.get(field, "")
-            if(isinstance(value, str)):
+            if isinstance(value, str):
                 try: 
                     value = value.replace(',', '.')
-                    value = float(value)
-                    if len(str(value)) > max_length:
+                    if len(value) > max_length:
                         errors[field].append(EnergyBillValueError if field=='invoice_in_reais' else ValueMaxError)
+                    value = float(value)
                 except: 
                     row[field] = value
                     if(value != ""):
                         errors[field].append(EnergyBillValueError if field=='invoice_in_reais' else ValueMaxError)
                         continue
 
-            if(math.isnan(value)):
+            elif math.isnan(value):
                 row[field] = ""
+
+            else: 
+                if len(str(value)) > max_length+1:
+                    errors[field].append(EnergyBillValueError if field=='invoice_in_reais' else ValueMaxError)            
 
         if row.get('invoice_in_reais') == '':
             errors['invoice_in_reais'].append(EnergyBillValueError)
