@@ -234,7 +234,8 @@ if TEST:
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'DEBUG')
 # diretório de logs
 LOG_DIR = Path('logs')
-
+# Criar o diretório de logs se não existir
+LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 LOGGING = {
     'version': 1,
