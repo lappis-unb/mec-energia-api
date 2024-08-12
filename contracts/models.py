@@ -1,5 +1,6 @@
 from django.db import models, transaction
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.validators import MinValueValidator
 from datetime import date, datetime
 
 from utils.subgroup_util import Subgroup
@@ -76,21 +77,24 @@ class Contract(models.Model):
         decimal_places=2,
         max_digits=10,
         null=False,
-        blank=False
+        blank=False,
+        validators=[MinValueValidator(0.01)]
     )
 
     peak_contracted_demand_in_kw = models.DecimalField(
         decimal_places=2,
         max_digits=10,
         null=True,
-        blank=True
+        blank=True,
+        validators=[MinValueValidator(0.01)]
     )
 
     off_peak_contracted_demand_in_kw = models.DecimalField(
         decimal_places=2,
         max_digits=10,
         null=True,
-        blank=True
+        blank=True,
+        validators=[MinValueValidator(0.01)]
     )
 
     def check_start_date_create_contract(self):

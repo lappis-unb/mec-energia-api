@@ -94,3 +94,91 @@ class TestContractViewSetTests:
         response = self.client.post('/api/contracts/', contract_data, format='json')
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    
+    def test_create_negative_contract(self):
+        consumer_unit_data = {
+            'name': 'Faculdade do Gama',
+            'code': '111111111',
+            'created_on': '2022-10-02',
+            'is_active': True,
+            'university': self.university.id, 
+            'total_installed_power': 0.2
+        }
+        consumer_unit_response = self.client.post('/api/consumer-units/', consumer_unit_data, format='json')
+        created_consumer_unit = json.loads(consumer_unit_response.content)
+
+        assert consumer_unit_response.status_code == status.HTTP_201_CREATED
+        assert 'id' in created_consumer_unit, f"Chave 'id' ausente em {created_consumer_unit}"
+
+        contract_data = {
+            'consumer_unit': created_consumer_unit['id'],
+            'start_date': '2023-01-01',
+            'end_date': '2023-12-31',
+            'supply_voltage': -100.00,
+            'distributor': self.distributor.id,
+        }
+
+        response = self.client.post('/api/contracts/', contract_data, format='json')
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'supply_voltage' in json.loads(response.content), f"Ensure this value is greater than or equal to 0.01."
+
+    def test_create_negative_pico(self):
+        consumer_unit_data = {
+            'name': 'Faculdade do Gama',
+            'code': '111111111',
+            'created_on': '2022-10-02',
+            'is_active': True,
+            'university': self.university.id, 
+            'total_installed_power': 0.2
+        }
+        consumer_unit_response = self.client.post('/api/consumer-units/', consumer_unit_data, format='json')
+        created_consumer_unit = json.loads(consumer_unit_response.content)
+
+        assert consumer_unit_response.status_code == status.HTTP_201_CREATED
+        assert 'id' in created_consumer_unit, f"Chave 'id' ausente em {created_consumer_unit}"
+
+        contract_data = {
+            'consumer_unit': created_consumer_unit['id'],
+            'start_date': '2023-01-01',
+            'end_date': '2023-12-31',
+            'supply_voltage': 100.00,
+            'distributor': self.distributor.id,
+            'peak_contracted_demand_in_kw': -120.00
+        }
+
+        response = self.client.post('/api/contracts/', contract_data, format='json')
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'peak_contracted_demand_in_kw' in json.loads(response.content), f"Ensure this value is greater than or equal to 0.01."
+
+    def test_create_negative_demand(self):
+        consumer_unit_data = {
+            'name': 'Faculdade do Gama',
+            'code': '111111111',
+            'created_on': '2022-10-02',
+            'is_active': True,
+            'university': self.university.id, 
+            'total_installed_power': 0.2
+        }
+        consumer_unit_response = self.client.post('/api/consumer-units/', consumer_unit_data, format='json')
+        created_consumer_unit = json.loads(consumer_unit_response.content)
+
+        assert consumer_unit_response.status_code == status.HTTP_201_CREATED
+        assert 'id' in created_consumer_unit, f"Chave 'id' ausente em {created_consumer_unit}"
+
+        contract_data = {
+            'consumer_unit': created_consumer_unit['id'],
+            'start_date': '2023-01-01',
+            'end_date': '2023-12-31',
+            'supply_voltage': 100.00,
+            'distributor': self.distributor.id,
+            'peak_contracted_demand_in_kw': 120.00,
+            'off_peak_contracted_demand_in_kw' : -50
+
+        }
+
+        response = self.client.post('/api/contracts/', contract_data, format='json')
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'off_peak_contracted_demand_in_kw' in json.loads(response.content), f"Ensure this value is greater than or equal to 0.01."
