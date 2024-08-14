@@ -7,7 +7,7 @@ from utils.date_util import DateUtils
 
 from tests.test_utils import dicts_test_utils
 from tests.test_utils import create_objects_test_utils
-
+import datetime
 @pytest.mark.django_db
 class TestContractEndpoint:
     def setup_method(self):
@@ -28,6 +28,10 @@ class TestContractEndpoint:
         self.consumer_unit_test_dict_without_contract = dicts_test_utils.consumer_unit_dict_4
         self.consumer_unit_test_without_contract = create_objects_test_utils.create_test_consumer_unit(self.consumer_unit_test_dict_without_contract, self.university)
         
+        self.consumer_unit_test_dict5 = dicts_test_utils.consumer_unit_dict_5
+        self.consumer_unit_test_5 = create_objects_test_utils.create_test_consumer_unit(self.consumer_unit_test_dict5, self.university)
+
+        
         self.distributor_dict = dicts_test_utils.distributor_dict_1
         self.distributor = create_objects_test_utils.create_test_distributor(self.distributor_dict, self.university)
 
@@ -42,6 +46,7 @@ class TestContractEndpoint:
         self.contract_test_3 = create_objects_test_utils.create_test_contract(self.contract_test_3_dict, self.distributor, self.consumer_unit_test)
         self.contract_test_4 = create_objects_test_utils.create_test_contract(self.contract_test_4_dict, self.distributor, self.consumer_unit_test)
         self.contract_test_5 = create_objects_test_utils.create_test_contract(self.contract_test_5_dict, self.distributor, self.consumer_unit_test)
+        
 
 
     def test_create_contract_and_set_last_contract_end_date_1(self):
@@ -83,3 +88,36 @@ class TestContractEndpoint:
     def test_consumer_unit_without_contract(self):
         teste = create_objects_test_utils.create_test_contract(dicts_test_utils.contract_dict_7, self.distributor, self.consumer_unit_test_without_contract)
         assert teste.check_start_date_is_valid() is None
+
+    def test_with_end_date_equals_True(self):
+        # CT 1
+        teste = create_objects_test_utils.create_test_contract(dicts_test_utils.contract_dict_10, self.distributor, self.consumer_unit_test)
+        teste.end_date = datetime.date(year=2050, month = 2, day = 1),
+        assert teste.check_start_date_is_valid() is None
+    
+    def test_contract_with_no_end_date_and_consumer_unit_has_no_currecnt_contract(self):
+        # CT 2
+        teste = create_objects_test_utils.create_test_contract(dicts_test_utils.contract_dict_7, self.distributor, self.consumer_unit_test_without_contract)
+        assert teste.check_start_date_is_valid() is None
+
+    # def test_contract_with_start_date_less_than_current_contract(self):
+    #     # data inicial contrato < data inicial do contrato mais antigo da unidade de consumo
+    #     # data inicial do contrato menor que a data do contrato atual
+    #     # criar um contrato em 2050, outro em 2051 e outro em 2049
+
+
+    #     self = create_objects_test_utils.create_test_contract(dicts_test_utils.contract_dict_11, self.distributor, self.consumer_unit_test_5)
+
+    #     self.consumer_unit.current_contract = True
+
+    #     with pytest.raises(Exception) as e:
+    #         self.check_start_date_is_valid()
+
+    #     assert 'Already have the contract in this date' in str(e.value)
+    #     assert self.check_start_date_is_valid() is 
+
+
+    # def test_contract_with_start_date_greater_or_equal_than_oldest_contract(self):
+
+      
+
