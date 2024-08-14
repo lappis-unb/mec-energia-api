@@ -9,6 +9,12 @@ import datetime
 import math
 from decimal import Decimal
 
+month_translation = {
+    'January': 'Janeiro', 'February': 'Fevereiro', 'March': 'Março', 'April': 'Abril',
+    'May': 'Maio', 'June': 'Junho', 'July': 'Julho', 'August': 'Agosto',
+    'September': 'Setembro', 'October': 'Outubro', 'November': 'Novembro', 'December': 'Dezembro'
+}
+
 class ContractServices:  
     def get_file_errors(self, csv_reader, consumer_unit_id): 
         energy_bill_data = []
@@ -50,9 +56,14 @@ class ContractServices:
         elif models.EnergyBill.check_energy_bill_month_year(consumer_unit_id, date):
             errors['date'].append(AlreadyHasEnergyBill)
 
-        elif not models.EnergyBill.check_energy_bill_covered_by_contract(
-            consumer_unit_id, date):
-            errors["date"].append(DateNotCoverByContractError)
+        else:
+            covered, contract_date = models.EnergyBill.check_energy_bill_covered_by_contract(consumer_unit_id, date)
+            if not covered:
+                month_name = contract_date.strftime("%B")
+                month_name_pt = month_translation[month_name]
+                contract_date_str = f"{month_name_pt} de {contract_date.year}"
+                dynamic_error_message = ErrorMensageParser.parse(DateNotCoverByContractError, (contract_date_str))
+                errors["date"].append(dynamic_error_message)
 
         for field, max_value in [
             ('invoice_in_reais', 99999999.99),

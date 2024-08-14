@@ -262,6 +262,8 @@ class EnergyBill(models.Model):
 
         if oldest_contract and latest_contract:
             if date >= oldest_contract.start_date or date >= latest_contract.start_date:
-                return True
+                return True, None
 
-        return False
+            return False, max(oldest_contract.start_date, latest_contract.start_date)
+
+        return False, None
