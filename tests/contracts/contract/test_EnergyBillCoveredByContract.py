@@ -23,8 +23,9 @@ class TestCheckEnergyBillCoveredByContract:
 
     # CT1 quando não há nenhum contrato existente
     def test_no_contracts(self):
-        result = EnergyBill.check_energy_bill_covered_by_contract(self.consumer_unit.id, datetime.strptime('2024-07-22', '%Y-%m-%d').date())
+        result, date = EnergyBill.check_energy_bill_covered_by_contract(self.consumer_unit.id, datetime.strptime('2024-07-22', '%Y-%m-%d').date())
         assert result is False
+        assert date is None
 
     # CT2 quando não há nenhuma conta coberta por contrato
     def test_no_bills_covered(self):
@@ -44,8 +45,9 @@ class TestCheckEnergyBillCoveredByContract:
             distributor=self.distributor
         )
 
-        result = EnergyBill.check_energy_bill_covered_by_contract(self.consumer_unit.id, datetime.strptime('2023-01-31', '%Y-%m-%d').date())
+        result, date = EnergyBill.check_energy_bill_covered_by_contract(self.consumer_unit.id, datetime.strptime('2023-01-31', '%Y-%m-%d').date())
         assert result is False
+        assert date == datetime.strptime('2024-02-01', '%Y-%m-%d').date()
 
     # CT3 quando há uma conta coberta com data maior ou igual apenas a data de início do contrato mais antigo 
     def test_bill_covered_by_only_a_oldest_contract(self):
@@ -65,8 +67,10 @@ class TestCheckEnergyBillCoveredByContract:
             distributor=self.distributor
         )
 
-        result = EnergyBill.check_energy_bill_covered_by_contract(self.consumer_unit.id, datetime.strptime('2024-01-02', '%Y-%m-%d').date())
+        result, date = EnergyBill.check_energy_bill_covered_by_contract(self.consumer_unit.id, datetime.strptime('2024-01-02', '%Y-%m-%d').date())
         assert result is True
+        assert date is None
+
 
     # CT4 quando há uma conta coberta com data maior ou igual a data de início de ambos os contratos 
     def test_bill_covered_by_both_contracts(self):
@@ -86,5 +90,6 @@ class TestCheckEnergyBillCoveredByContract:
             distributor=self.distributor
         )
 
-        result = EnergyBill.check_energy_bill_covered_by_contract(self.consumer_unit.id, datetime.strptime('2024-03-01', '%Y-%m-%d').date())
+        result, date = EnergyBill.check_energy_bill_covered_by_contract(self.consumer_unit.id, datetime.strptime('2024-03-01', '%Y-%m-%d').date())
         assert result is True
+        assert date is None
