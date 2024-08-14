@@ -136,8 +136,11 @@ class ConsumerUnit(models.Model):
             self.id)
 
         for energy_bill in energy_bills:
-            if energy_bill['energy_bill'] == None:
-                pending_bills_number += 1
+            energy_bill_date = date(energy_bill['year'], energy_bill['month'], 1)
+
+            if energy_bill_date > self.oldest_contract.start_date:
+                if energy_bill['energy_bill'] == None:
+                    pending_bills_number += 1
 
         return pending_bills_number
 
