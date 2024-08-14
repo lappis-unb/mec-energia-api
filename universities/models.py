@@ -92,7 +92,7 @@ class ConsumerUnit(models.Model):
     )
 
     class Meta:
-        unique_together = ['university', 'code']
+        unique_together = ['university', 'name', 'code']
 
     @property
     def current_contract(self) -> Contract:
