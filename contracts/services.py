@@ -54,18 +54,18 @@ class ContractServices:
             consumer_unit_id, date):
             errors["date"].append(DateNotCoverByContractError)
 
-        for field, max_length in [
-            ('invoice_in_reais', 10),
-            ('peak_consumption_in_kwh', 6),
-            ('off_peak_consumption_in_kwh', 6),
-            ('peak_measured_demand_in_kw', 6),
-            ('off_peak_measured_demand_in_kw', 6),
+        for field, max_value in [
+            ('invoice_in_reais', 99999999.99),
+            ('peak_consumption_in_kwh', 9999999.99),
+            ('off_peak_consumption_in_kwh', 9999999.99),
+            ('peak_measured_demand_in_kw', 9999999.99),
+            ('off_peak_measured_demand_in_kw', 9999999.99),
         ]:
             value = row.get(field, "")
             if isinstance(value, str):
                 try: 
                     value = value.replace(',', '.')
-                    if len(value) > max_length:
+                    if value > max_value:
                         errors[field].append(EnergyBillValueError if field=='invoice_in_reais' else ValueMaxError)
                     value = float(value)
                 except: 
@@ -78,7 +78,7 @@ class ContractServices:
                 row[field] = ""
 
             else: 
-                if len(str(value)) > max_length+1:
+                if value > max_value:
                     errors[field].append(EnergyBillValueError if field=='invoice_in_reais' else ValueMaxError)            
 
         if row.get('invoice_in_reais') == '':

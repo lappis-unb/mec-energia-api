@@ -106,7 +106,7 @@ class Contract(models.Model):
 
     def check_start_date_is_valid(self):
         if self.end_date:
-            return
+            return 
 
         consumer_unit = self.consumer_unit
 
@@ -180,28 +180,28 @@ class EnergyBill(models.Model):
 
     peak_consumption_in_kwh = models.DecimalField(
         decimal_places=2,
-        max_digits=10,
+        max_digits=9,
         null=True,
-        blank=True
+        blank=True,
     )
 
     off_peak_consumption_in_kwh = models.DecimalField(
         decimal_places=2,
-        max_digits=10,
+        max_digits=9,
         null=True,
         blank=True
     )
 
     peak_measured_demand_in_kw = models.DecimalField(
         decimal_places=2,
-        max_digits=10,
+        max_digits=9,
         null=True,
         blank=True
     )
 
     off_peak_measured_demand_in_kw = models.DecimalField(
         decimal_places=2,
-        max_digits=10,
+        max_digits=9,
         null=True,
         blank=True
     )

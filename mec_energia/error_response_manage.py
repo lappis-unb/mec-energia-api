@@ -7,7 +7,7 @@ ExpiredTariffWarnning = (5, "Atualize as tarifas vencidas para aumentar a precis
 DuplicatedDateError = (6, "Este mês está duplicado na planilha")
 DateNotCoverByContractError = (7, "Este mês não é coberto por um contrato registrado no sistema")
 FormatDateError = (8, 'O mês deve ser uma data nos formatos “mm/aaaa", "mmm/aaaa" como “abr/2024”, ou "dd/mm/aaaa"')
-ValueMaxError = (9, "Valores de Consumo e Demanda devem ser números entre 0,1 e 99.999,99")
+ValueMaxError = (9, "Valores de Consumo e Demanda devem ser números entre 0,1 e 9.999.999,99")
 AlreadyHasEnergyBill = (10, "Já existe uma fatura lançada neste mês")
 EnergyBillValueError = (11, "O valor da fatura deve ser um número entre 0,1 e 99.999.999,99")
 
