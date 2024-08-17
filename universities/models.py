@@ -92,7 +92,7 @@ class ConsumerUnit(models.Model):
     )
 
     class Meta:
-        unique_together = ['university', 'code', 'name']
+        unique_together = ['university', 'name', 'code']
 
     @property
     def current_contract(self) -> Contract:
@@ -136,8 +136,11 @@ class ConsumerUnit(models.Model):
             self.id)
 
         for energy_bill in energy_bills:
-            if energy_bill['energy_bill'] == None:
-                pending_bills_number += 1
+            energy_bill_date = date(energy_bill['year'], energy_bill['month'], 1)
+
+            if energy_bill_date >= self.oldest_contract.start_date:
+                if energy_bill['energy_bill'] == None:
+                    pending_bills_number += 1
 
         return pending_bills_number
 
@@ -191,18 +194,19 @@ class ConsumerUnit(models.Model):
 
     @classmethod
     def edit_consumer_unit_and_contract(cls, data_consumer_unit, data_contract):
-
-        try:            
-            consumer_unit = ConsumerUnit.objects.filter(id=data_consumer_unit['consumer_unit_id']).update(
-                name = data_consumer_unit['name'],
-                code = data_consumer_unit['code'],
-                is_active = data_consumer_unit['is_active'],
-                total_installed_power = data_consumer_unit["total_installed_power"]
-            )
+        try:
+            consumer_unit = ConsumerUnit.objects.get(id=data_consumer_unit['consumer_unit_id'])
 
             if not consumer_unit:
                 raise Exception('Consumer Unit not exist')
             
+            consumer_unit.name = data_consumer_unit['name']
+            consumer_unit.code = data_consumer_unit['code']
+            consumer_unit.is_active = data_consumer_unit['is_active']
+            consumer_unit.total_installed_power = data_consumer_unit['total_installed_power']
+
+            consumer_unit.save()
+ 
             contract = Contract.objects.get(id=data_contract['contract_id'])
 
             if not contract:

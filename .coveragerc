@@ -3,6 +3,7 @@ omit =
     tests/* 
     */migrations/*
     __init__.py
+    apps.py
 branch = True 
 
 [html]
