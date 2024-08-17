@@ -14,16 +14,22 @@ class CustomUserSerializer(HyperlinkedModelSerializer):
                   'email', 'type', 'account_password_status',
                   'have_reset_password_token_enable', 'created_on']
         extra_kwargs = {'password': {'write_only': True, 'required': False}}
+        
+class UniversitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = University
+        fields = ['name']
 
         
 class UniversityUserSerializer(HyperlinkedModelSerializer):
     id = serializers.IntegerField(read_only=True)
-    university = serializers.PrimaryKeyRelatedField(queryset=University.objects.all())
+    university = UniversitySerializer(read_only=True)
 
     class Meta:
         model = UniversityUser
         fields = ['id', 'url', 'first_name', 'last_name', 'password',
-                  'email', 'type', 'created_on', 'university']
+                  'email', 'type', 'account_password_status',
+                  'have_reset_password_token_enable', 'created_on', 'university']
         extra_kwargs = {'password': {'write_only': True, 'required': False}}
 
 

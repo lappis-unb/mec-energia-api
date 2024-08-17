@@ -58,11 +58,11 @@ class CustomUserViewSet(ModelViewSet):
             return Response({'detail': f'{error}'}, status.HTTP_401_UNAUTHORIZED)
 
         if request.user.type == CustomUser.super_user_type:
-            queryset = CustomUser.objects.all()
+            queryset = UniversityUser.objects.all()
         else:
             queryset = UniversityUser.objects.filter(university = request_university_id)
         
-        serializer = CustomUserSerializer(queryset, many=True, context={'request': request})
+        serializer = UniversityUserSerializer(queryset, many=True, context={'request': request})
 
         return Response(serializer.data, status.HTTP_200_OK)
 
