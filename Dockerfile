@@ -1,14 +1,28 @@
-FROM python:3.10.5
+FROM python:3.11.9-slim-bookworm
 
-RUN apt-get update && \
-apt-get install -y libpq-dev cron
+ENV PYTHONDONTWRITEBYTECODE 1  
+ENV PYTHONUNBUFFERED 1
 
-COPY . .
-RUN pip install -U --no-cache-dir -r requirements.txt
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq-dev \
+    cron \
+    apt-get autoremove -y &&\
+    apt-get clean -y && \
+    rm -rf /var/lib/apt/lists/*
 
-# ----------------------------------< cron >-----------------------------------------------
+ARG DJANGO_ENV
+ENV DJANGO_ENV=${DJANGO_ENV}
+RUN echo "Build environment: ${DJANGO_ENV}"
+
+COPY requirements requirements
+RUN pip install --upgrade pip && \
+pip install --no-cache-dir -r requirements/${DJANGO_ENV}.txt
+
+WORKDIR /home/dev/mec-energia-api
+COPY ./ ./
+
 COPY cronjob/cronjob /etc/cron.d/mec-cron
 RUN chmod -R 755 /etc/cron.d/mec-cron && \
     /usr/bin/crontab /etc/cron.d/mec-cron
 
-WORKDIR /home/dev/mec-energia-api
+CMD ["cron", "-f"]
