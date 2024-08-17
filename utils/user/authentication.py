@@ -1,7 +1,8 @@
 import string
 import random
 
-from mec_energia import settings
+from django.conf import settings
+
 
 def generate_random_password():
     return ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(20))

@@ -1,17 +1,18 @@
 
+from abc import ABC
 from sko.PSO import PSO
+from django.conf import settings
 from global_search_recommendation.domain import Domain
 from global_search_recommendation.recommendation import Recommendation
 from tariffs.models import Tariff
-from mec_energia.settings import NEW_RESOLUTION_MINIMUM_DEMAND
-from abc import ABC
+
 
 class Runner(ABC):
     def __init__(self, domain: Domain) -> None:
         self.domain = domain
         self.history = domain.consumption_history
-        self.p_lbound = max(self.history['peak_measured_demand_in_kw'].min(), NEW_RESOLUTION_MINIMUM_DEMAND)
-        self.o_lbound = max(self.history['off_peak_measured_demand_in_kw'].min(), NEW_RESOLUTION_MINIMUM_DEMAND)
+        self.p_lbound = max(self.history['peak_measured_demand_in_kw'].min(), settings.NEW_RESOLUTION_MINIMUM_DEMAND)
+        self.o_lbound = max(self.history['off_peak_measured_demand_in_kw'].min(), settings.NEW_RESOLUTION_MINIMUM_DEMAND)
         self.p_ubound = max(self.history['peak_measured_demand_in_kw'].max(), self.p_lbound+1)
         self.o_ubound = max(self.history['off_peak_measured_demand_in_kw'].max(), self.o_lbound+1)
         self.g_lb = min(self.p_lbound, self.o_lbound) 

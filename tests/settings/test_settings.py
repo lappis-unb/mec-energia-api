@@ -1,9 +1,9 @@
 import pytest
-import os
 
-from mec_energia import settings as s
+from django.conf import settings as s
 
-@pytest.mark.order(1)    
+
+@pytest.mark.order(1)
 def test_var_secret_key_is_available():
     assert s.SECRET_KEY is not None
 
@@ -32,5 +32,3 @@ def test_var_mec_energia_email_is_available():
 @pytest.mark.order(1)    
 def test_var_mec_energia_email_app_password_is_available():
     assert s.MEC_ENERGIA_EMAIL_APP_PASSWORD is not None
-
-

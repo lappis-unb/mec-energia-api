@@ -1,6 +1,7 @@
-from mec_energia import settings
+from django.conf import settings
 
 MEC_ENERGIA_URL = settings.MEC_ENERGIA_URL
+
 
 def template_email_first_access(user_name, university_acronym, link_reset_password_page):
     title = 'Cadastrado na MEPA - Monitoramento de Energia em Plataforma Aberta'

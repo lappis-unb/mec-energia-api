@@ -1,11 +1,11 @@
-from django.utils import timezone
-from django.db import models
-from django.contrib.auth.models import AbstractUser
-from django.utils.translation import gettext_lazy as _
-from django.core.exceptions import ObjectDoesNotExist
 from datetime import timedelta
 
-from mec_energia import settings
+from django.conf import settings
+from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import models
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from universities.models import ConsumerUnit, University
 
@@ -57,7 +57,7 @@ class UserToken(models.Model):
         
     @classmethod
     def get_user_by_token_and_set_invalid_tried(cls, token):
-        from .authentications import code_password_token_ok, code_password_token_expired
+        from .authentications import code_password_token_expired, code_password_token_ok
 
         try:
             user_token = UserToken.objects.get(token = token)
