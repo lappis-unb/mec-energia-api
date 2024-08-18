@@ -5,15 +5,14 @@ import environ
 
 from .common import *
 
-env = environ.Env()
 
+env = environ.Env()
 ENV_FILE = BASE_DIR / ".envs" / ".env.dev"
 env.read_env(ENV_FILE)
 
-SECRET_KEY = "django-insecure-#123!@#$%^&*()_+"
-
-DEBUG = True
 ENVIRONMENT = env("ENVIRONMENT")
+SECRET_KEY = "django-insecure-#123!@#$%^&*()_+"
+DEBUG = True
 
 ALLOWED_HOSTS = ["mepa-api", "localhost", "127.0.0.1", "0.0.0.0", "[::1]"]
 CSRF_TRUSTED_ORIGINS = ["http://mepa-web:3000", "http://localhost:3000"]
@@ -36,7 +35,7 @@ DATABASES = {
 
 # MEC ENERGIA
 # ------------------------------------------------------------------------------------------------
-MEC_ENERGIA_URL = env("MEC_ENERGIA_URL")
+MEC_ENERGIA_URL = env("FRONT_SERVICE_URL")
 
 # Parâmetros de recomendação de contrato
 MINIMUM_ENERGY_BILLS_FOR_RECOMMENDATION = 6
@@ -73,6 +72,15 @@ DEBUG_TOOLBAR_CONFIG = {
 # DJANGO EXTENSIONS
 # ------------------------------------------------------------------------------------------------
 INSTALLED_APPS += ["django_extensions"]
+
+
+# SECURITY DISABLED FOR DEVELOPMENT
+# ------------------------------------------------------------------------------------------------
+SECURE_BROWSER_XSS_FILTER = False
+SECURE_CONTENT_TYPE_NOSNIFF = False
+SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
 
 
 # ENVIRONMENT TEST
