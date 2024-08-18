@@ -1,0 +1,52 @@
+
+services:
+  mepa-api:
+    container_name: mepa-api
+    restart: unless-stopped
+    image: mepa-api:${TAG:-latest-prod}
+    build:
+        context: .
+        dockerfile: Dockerfile
+        args:
+          - DJANGO_ENV=${ENVIRONMENT:-production}
+    env_file: 
+      - ./.envs/.env.prod
+    command: ['sh', 'scripts/start_prod.sh']
+    ports:
+      - "${API_PORT:-8000}:${API_PORT:-8000}"
+    volumes:
+      - static_volume:/app/mepa-api/staticfiles
+      - media_volume:/app/mepa-api/mediafiles
+    networks:
+      - api-network
+      - proxy-network
+    depends_on:
+      - mepa-db
+
+  mepa-db:
+    container_name: mepa-db
+    restart: unless-stopped
+    image: postgres:${POSTGRES_VERSION:-15.2-bullseye}
+    env_file: 
+      - ./.envs/.env.prod
+    volumes:
+      - mepa-prod-data:/var/lib/postgresql/data
+    networks:
+        - api-network
+
+
+volumes:
+  mepa-prod-data:
+    name: mepa-prod-data
+  static_volume:
+    external: true
+  media_volume:
+    external: true
+
+networks:
+  api-network:
+    name: api-network
+    driver: bridge
+  proxy-network:
+    external: true
+
