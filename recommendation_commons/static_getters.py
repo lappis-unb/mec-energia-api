@@ -7,6 +7,7 @@ from universities.models import ConsumerUnit
 from contracts.models import Contract
 from recommendation_commons.recommendation_result import RecommendationResult
 
+import pandas as pd
 import decimal
 
 class StaticGetters:
@@ -72,42 +73,65 @@ class StaticGetters:
         return (measured_demand - contracted_demand).clip(0)
     
     @classmethod
-    def get_demand_cost(cls, tariff: Tariff, history: DataFrame, demand_values):        
+    def get_demand_cost(cls, tariff: Tariff, history: DataFrame, demand_values, installed_power_supply = None):
+        power_generation_factor = cls.__power_generation_factor_handler(installed_power_supply, tariff, demand_values)
         if tariff.is_green():
             tariff = tariff.as_green_tariff()
             demand = demand_values[1]
             exceeded_sum = cls.get_exceeded_demand_column(history.peak_measured_demand_in_kw, demand) + \
                            cls.get_exceeded_demand_column(history.off_peak_measured_demand_in_kw, demand)   # Checar a utilização da coluna de ultrapassagem
             exceeded_val = exceeded_sum * 3
-            return (demand + exceeded_val) * tariff.na_tusd_in_reais_per_kw
+            return (demand + exceeded_val) * tariff.na_tusd_in_reais_per_kw + power_generation_factor
         elif tariff.is_blue():
             tariff = tariff.as_blue_tariff()
             (peak_demand, off_peak_demand) = (demand_values[0], demand_values[1])
             value_peak = peak_demand + 3 * cls.get_exceeded_demand_column(history.peak_measured_demand_in_kw, peak_demand)
             value_off_peak = off_peak_demand + 3 * cls.get_exceeded_demand_column(history.off_peak_measured_demand_in_kw, off_peak_demand) # Checar a utilização da coluna de ultrapassagem
-            return (tariff.peak_tusd_in_reais_per_kw * value_peak) + (tariff.off_peak_tusd_in_reais_per_kw * value_off_peak)
+            return (tariff.peak_tusd_in_reais_per_kw * value_peak) + (tariff.off_peak_tusd_in_reais_per_kw * value_off_peak) + power_generation_factor
 
     ## REFACTOR: tanto current quanto recommended possuem algumas colunas em comun, dá pra reutilizar melhor o código
     @classmethod
-    def calculate_current_contract(cls, history: DataFrame, tariff: Tariff):
+    def calculate_current_contract(cls, history: DataFrame, tariff: Tariff, installed_power_supply):
         current_contract = DataFrame(columns=CURRENT_CONTRACT_HEADERS)
         current_contract.date = history.date
         current_contract.consumption_cost_in_reais = cls.get_comsuption_cost(history, tariff)
         demand_values = (history['contract_peak_demand_in_kw'], history['contract_off_peak_demand_in_kw'])
-        current_contract.demand_cost_in_reais = cls.get_demand_cost(tariff, history, demand_values)
+        current_contract.demand_cost_in_reais = cls.get_demand_cost(tariff, history, demand_values, installed_power_supply)
        
         return cls.atualize_frames_percentages(current_contract)
     
     @classmethod
-    def get_recommendation_frame(cls, history: DataFrame, values: tuple, tariff: Tariff):
+    def get_recommendation_frame(cls, history: DataFrame, values: tuple, tariff: Tariff, installed_power_supply):
         recommendation_frame = DataFrame(columns=RECOMMENDATION_FRAME_HEADERS)
         recommendation_frame.date = history.date
         recommendation_frame.peak_demand_in_kw = values[0]
         recommendation_frame.off_peak_demand_in_kw = values[1]
         recommendation_frame.consumption_cost_in_reais = cls.get_comsuption_cost(history, tariff)
-        recommendation_frame.demand_cost_in_reais = cls.get_demand_cost(tariff, history, values)
+        recommendation_frame.demand_cost_in_reais = cls.get_demand_cost(tariff, history, values, installed_power_supply)
        
         return cls.atualize_frames_percentages(recommendation_frame)
+    
+    @classmethod
+    def __power_generation_factor_handler(cls, installed_power_supply, tariff, demands):
+        tusd_g = tariff.power_generation_tusd_in_reais_per_kw
+        if isinstance(demands, tuple) and isinstance(demands[0], pd.Series) and isinstance(demands[1], pd.Series):
+            if tariff.is_green():
+                return sum([cls.get_power_generation_factor(installed_power_supply, tusd_g, [demand]) for demand in demands[1]])
+            else:
+                return sum([cls.get_power_generation_factor(installed_power_supply, tusd_g, [peak, off_peak]) for peak, off_peak in zip(demands[0], demands[1])])
+        else:
+            if tariff.is_green():
+                return cls.get_power_generation_factor(installed_power_supply, tusd_g, [demands[1]])
+            else:
+                return cls.get_power_generation_factor(installed_power_supply, tusd_g, demands)
+
+
+    @staticmethod
+    def get_power_generation_factor(installed_power_supply, tusd_g, demands):
+        if not installed_power_supply:
+            return 0
+        
+        return float(max(0, (installed_power_supply - decimal.Decimal(max(demands))) * tusd_g))
     
     @classmethod
     def validate_recommendation_with_power_generation(cls, recommendation: RecommendationResult, current_tusd_g, rec_tusd_g, cur_demand_values: tuple, instaled_power_supply = None):
