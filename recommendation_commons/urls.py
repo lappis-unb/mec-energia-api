@@ -6,7 +6,7 @@ from mec_energia.settings import RECOMMENDATION_METHOD, ENVIRONMENT
 
 router = DefaultRouter()
 
-router.register(r'recommendation', GlobalSearchRecommendationViewSet if RECOMMENDATION_METHOD == 'global-search' else RecommendationViewSet, basename='recommendation')
+router.register(r'recommendation', GlobalSearchRecommendationViewSet if RECOMMENDATION_METHOD in ['pso', 'ga'] else RecommendationViewSet, basename='recommendation')
 router.register(r'recommendation-settings', RecommendationSettings, basename='recommendation-settings')
 
 if(ENVIRONMENT != 'production'):

@@ -3,10 +3,11 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
 from global_search_recommendation.domain import Domain
-from global_search_recommendation.runner import PSORunner
+from global_search_recommendation.runner import PSORunner, GARunner
 
 from recommendation_commons.response import build_response
 from recommendation_commons.helpers import fill_history_with_pending_dates
+from mec_energia.settings import RECOMMENDATION_METHOD
 from pandas import DataFrame
 
 class GlobalSearchRecommendationViewSet(ViewSet):
@@ -36,7 +37,7 @@ class GlobalSearchRecommendationViewSet(ViewSet):
             else:
                 return Response(domain_mount_result)
             
-        runner = PSORunner(domain)
+        runner = GARunner(domain) if RECOMMENDATION_METHOD == 'ga' else PSORunner(domain)
         recomendation = runner.calculate()
 
         return recomendation.build_response()
