@@ -167,6 +167,7 @@ cython_debug/
 
 .vscode/
 media/
+.draft/
 db.sqlite3
 venv/
 .env
