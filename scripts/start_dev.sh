@@ -20,7 +20,7 @@ python manage.py check
 echo "${C}_________________________________________________________________________________________________________${E}"
 echo "${C}=> STARTING CRON                                                                                         ${E}"
 echo 'Cronjobs mec-cron in operating system'
-/bin/cp /home/dev/mec-energia-api/cronjob/cronjob /etc/cron.d/mec-cron
+/bin/cp /app/mepa-api/cronjob/cronjob /etc/cron.d/mec-cron
 crontab /etc/cron.d/mec-cron
 cron
 
