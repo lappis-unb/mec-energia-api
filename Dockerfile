@@ -1,23 +1,36 @@
-FROM python:3.11.9-slim-bookworm
-
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    libpq-dev \
-    cron && \
-    apt-get autoremove -y &&\
-    apt-get clean -y
+FROM python:3.11.9-slim-bookworm as base
 
 ARG DJANGO_ENV
-ENV DJANGO_ENV=${DJANGO_ENV}
-RUN echo "Build environment: ${DJANGO_ENV}"
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ENV BUILD_ENV=${DJANGO_ENV}
+
+# -----------------------------------------------------------------------------
+FROM base as builder
+RUN apt-get update && \
+    apt-get install -y libpq-dev
 
 COPY requirements requirements
 RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements/${DJANGO_ENV}.txt
+    pip install --no-cache-dir wheel && \
+    pip wheel --no-cache-dir --wheel-dir=/usr/src/app/wheels -r \
+    requirements/${BUILD_ENV}.txt
 
+# -----------------------------------------------------------------------------
+FROM base as runner
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libpq5 \
+    cron && \
+    apt-get autoremove -y &&\
+    apt-get clean -y &&\
+    rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /usr/src/app/wheels /wheels
+RUN pip install --no-cache-dir --no-index --find-links=/wheels/ /wheels/* \
+    && rm -rf /wheels/
+    
 WORKDIR /app/mepa-api
 COPY ./ ./
 
