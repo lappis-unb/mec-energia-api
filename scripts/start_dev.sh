@@ -11,6 +11,8 @@ B='\033[0;34m'   # blue
 W='\033[0;37m'   # white
 E='\033[0m'      # end
 
+SITE_NAME="Monitoramento de Energia em Plataforma Aberta"
+
 echo "${C}_________________________________________________________________________________________________________${E}"
 echo "${C}=> CHECK INTEGRITY (check)                                                                               ${E}"
 python manage.py check
@@ -32,11 +34,11 @@ python manage.py migrate
 
 echo "${C}_________________________________________________________________________________________________________${E}"
 echo '\e[33;36m=> RUNNING SERVER (runserver) \e[0;33m                                                                  '
-echo " ${Y}                                                     __    ${E}   ______  _____________________ _______     "
-echo " ${Y}                                                   /    \  ${E}   ___   |/  /___  ____/___  __ \___    |    "
-echo " ${Y}                                                  /__    \ ${E}   __  /|_/ / __  __/   __  /_/ /__  /| |    "
-echo " ${Y}                                                  \  /\  / ${E}   _  /  / /  _  /___   _  ____/ _  ___ |    "
-echo " ${Y}                                                   \/__\/  ${E}   /_/  /_/   /_____/   /_/      /_/  |_|    "
-echo "Starting ${W}"${API_SERVICE_NAME}"${E} - ${G}"${API_URL}"${E}                            ${B}Consumo de energia com sabedoria${E} "
+echo " ${Y}                                                    __    ${E}     ______  _____________________ _______     "
+echo " ${Y}                                                  /    \  ${E}     ___   |/  /___  ____/___  __ \___    |    "
+echo " ${Y}                                                 /__    \ ${E}     __/ /|_/ / __/ __/   __  /_/ /__  /| |    "
+echo " ${Y}                                                 \  /\  / ${E}     _/ /  / /  _/ /___   _/ ____/ _/ ___ |    "
+echo " ${Y}                                                  \/__\/  ${E}     /_/  /_/   /_____/   /_/      /_/  |_|    "
+echo "Starting ${W}"${API_SERVICE_NAME}"${E} - ${G}"${API_URL}"${E}                ${B}"${SITE_NAME}"${E}              "
 echo "${C}_________________________________________________________________________________________________________${E}"
-python manage.py runserver ${API_HOST}:${API_PORT}
+python manage.py runserver ${API_HOST}:${API_PORT} 
