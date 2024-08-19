@@ -79,7 +79,7 @@ class ConsumerUnit(models.Model):
 
     total_installed_power = models.DecimalField(
         decimal_places=2,
-        max_digits=6,
+        max_digits=7,
         null=True,
         blank=True, 
         help_text=_(
