@@ -22,7 +22,7 @@ def test_recommendation(code: str):
         None
     )
 
-    result = sut.calculate(None)
+    result = sut.calculate()
 
     assert_frame_equal(
         data.expected_current_contract,
