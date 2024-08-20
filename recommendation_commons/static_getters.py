@@ -132,20 +132,6 @@ class StaticGetters:
             return 0
         
         return float(max(0, (installed_power_supply - decimal.Decimal(max(demands))) * tusd_g))
-    
-    @classmethod
-    def validate_recommendation_with_power_generation(cls, recommendation: RecommendationResult, current_tusd_g, rec_tusd_g, cur_demand_values: tuple, instaled_power_supply = None):
-        if instaled_power_supply:
-            rec_demand = decimal.Decimal(recommendation.off_peak_demand_in_kw) if recommendation.tariff_flag == Tariff.GREEN \
-                else decimal.Decimal(max(recommendation.peak_demand_in_kw, recommendation.off_peak_demand_in_kw))
-            if rec_demand < instaled_power_supply:
-                recommendation.frame['demand_cost_in_reais'] += float((instaled_power_supply - rec_demand) * rec_tusd_g)
-                recommendation.current_contract['demand_cost_in_reais'] += float((instaled_power_supply - max(cur_demand_values)) * current_tusd_g)
-
-                recommendation.frame = cls.atualize_frames_percentages(recommendation.frame)
-                recommendation.current_contract = cls.atualize_frames_percentages(recommendation.current_contract)
-        
-        return recommendation
                 
     @staticmethod
     def atualize_frames_percentages(frame: DataFrame):
