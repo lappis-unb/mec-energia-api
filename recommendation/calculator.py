@@ -48,7 +48,7 @@ class ContractRecommendationCalculator:
         self.frame = DataFrame(columns=self.HEADERS)
         self.current_contract = current_contract
 
-    def calculate(self, total_installed_power, sub_group, cur_demand_values):
+    def calculate(self, total_installed_power, sub_group):
         rec = RecommendationResult()
         rec.current_contract = self.current_contract
 
@@ -64,14 +64,7 @@ class ContractRecommendationCalculator:
             rec.peak_demand_in_kw = self.green_summary.off_peak_demand_in_kw[0]
         
         recommended_tariff = self.blue_tariff if rec.tariff_flag == Tariff.BLUE else self.green_tariff
-        rec.frame = StaticGetters.get_recommendation_frame(self.consumption_history, (rec.peak_demand_in_kw, rec.off_peak_demand_in_kw), recommended_tariff)
-
-        rec_tariff_to_validation = self.blue_tariff.power_generation_tusd_in_reais_per_kw if rec.tariff_flag == Tariff.BLUE \
-            else self.green_tariff.power_generation_tusd_in_reais_per_kw
-        current_tariff_to_validation = self.blue_tariff.power_generation_tusd_in_reais_per_kw if self.current_tariff_flag == Tariff.BLUE \
-            else self.green_tariff.power_generation_tusd_in_reais_per_kw
-        
-        rec = StaticGetters.validate_recommendation_with_power_generation(rec, current_tariff_to_validation, rec_tariff_to_validation, cur_demand_values, total_installed_power)
+        rec.frame = StaticGetters.get_recommendation_frame(self.consumption_history, (rec.peak_demand_in_kw, rec.off_peak_demand_in_kw), recommended_tariff, total_installed_power)
 
         rec.frame.absolute_difference = \
             self.current_contract.cost_in_reais - rec.frame.contract_cost_in_reais
@@ -97,20 +90,20 @@ class RecommendationCalculator:
         blue_tariff: Tariff,
         green_tariff: Tariff,
         sub_group: str,
-        cur_demand_values: tuple,
+        total_installed_power
     ):
         self.current_tariff = current_tariff_flag
         self.blue_tariff = blue_tariff
         self.green_tariff = green_tariff
         self.consumption_history = consumption_history
-        self.current_contract = StaticGetters.calculate_current_contract(consumption_history, blue_tariff if current_tariff_flag == Tariff.BLUE else green_tariff)
+        self.current_contract = StaticGetters.calculate_current_contract(consumption_history, blue_tariff if current_tariff_flag == Tariff.BLUE else green_tariff, total_installed_power)
         self.sub_group = sub_group
 
-        self.blue_calculator = BluePercentileCalculator(consumption_history, self.blue_tariff.as_blue_tariff())
-        self.green_calculator = GreenPercentileCalculator(consumption_history, self.green_tariff.as_green_tariff())
-        self.cur_demand_values = cur_demand_values      
+        self.blue_calculator = BluePercentileCalculator(consumption_history, self.blue_tariff.as_blue_tariff(), total_installed_power)
+        self.green_calculator = GreenPercentileCalculator(consumption_history, self.green_tariff.as_green_tariff(), total_installed_power)
+        self.total_installed_power = total_installed_power
 
-    def calculate(self, total_installed_power):
+    def calculate(self):
         '''Essa função ainda deve voltar um RecommendationResult, manipulando
         ou incluindo ContractRecommendationResult'''
         b_result = self.blue_calculator.calculate()
@@ -126,5 +119,5 @@ class RecommendationCalculator:
             current_contract = self.current_contract,
         )
 
-        rec = rec_calculator.calculate(total_installed_power, self.sub_group, self.cur_demand_values)
+        rec = rec_calculator.calculate(self.total_installed_power, self.sub_group)
         return rec

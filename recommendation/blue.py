@@ -4,7 +4,8 @@ from numpy import ceil as roundup
 
 from tariffs.models import BlueTariff
 from mec_energia.settings import NEW_RESOLUTION_MINIMUM_DEMAND
-
+from recommendation_commons.static_getters import StaticGetters
+import decimal
 
 class BluePercentileResult:
     def __init__(self, p: 'dict[str, DataFrame]', s: DataFrame):
@@ -22,10 +23,11 @@ class BluePercentileCalculator():
                        'peak_demand_in_kw', 'off_peak_demand_in_kw',
                        'exceeded_peak_demand_in_kw', 'exceeded_off_peak_demand_in_kw']
 
-    def __init__(self, consumption_history: DataFrame, tariff: BlueTariff) -> None:
+    def __init__(self, consumption_history: DataFrame, tariff: BlueTariff, installed_power_supply) -> None:
         self.consumption_history = consumption_history
         self.history_length = len(consumption_history.index)
         self.tariff = tariff
+        self.installed_power_supply = installed_power_supply
 
     def calculate(self) -> BluePercentileResult:
         percentiles = self.__calculate_percentiles()
@@ -67,11 +69,17 @@ class BluePercentileCalculator():
                 - percentiles[p_str].off_peak_demand_in_kw
             percentiles[p_str].exceeded_off_peak_demand_in_kw = percentiles[p_str] \
                 .exceeded_off_peak_demand_in_kw.clip(.0)
+            
+            power_generation_factor = self.history_length * StaticGetters.get_power_generation_factor(
+                self.installed_power_supply, 
+                decimal.Decimal(self.tariff.power_generation_tusd_in_reais_per_kw),
+                [peak_demand_in_kw_percentile, off_peak_demand_in_kw_percentile])
 
             # Template de relatório:
             # Seção 4: Metodologia de cálculo: fórmulas (2) e (3)
             # Vdemanda + Vultrapassagem
             percentiles[p_str].demand_total_cost_in_reais = \
+                power_generation_factor + \
                 self.tariff.peak_tusd_in_reais_per_kw*percentiles[p_str].peak_demand_in_kw\
                 + 3*self.tariff.peak_tusd_in_reais_per_kw*percentiles[p_str].exceeded_peak_demand_in_kw\
                 + self.tariff.off_peak_tusd_in_reais_per_kw*percentiles[p_str].off_peak_demand_in_kw\

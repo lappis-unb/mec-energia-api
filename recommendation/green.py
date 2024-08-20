@@ -5,6 +5,8 @@ from numpy import ceil as roundup
 
 from tariffs.models import GreenTariff
 from mec_energia.settings import NEW_RESOLUTION_MINIMUM_DEMAND
+from recommendation_commons.static_getters import StaticGetters
+import decimal
 
 class GreenPercentileResult:
     def __init__(self, p: 'dict[str, DataFrame]', s: DataFrame):
@@ -22,10 +24,11 @@ class GreenPercentileCalculator():
                        'off_peak_demand_in_kw',
                        'exceeded_peak_demand_in_kw', 'exceeded_off_peak_demand_in_kw']
 
-    def __init__(self, consumption_history: DataFrame, tariff: GreenTariff) -> None:
+    def __init__(self, consumption_history: DataFrame, tariff: GreenTariff, installed_power_supply) -> None:
         self.consumption_history = consumption_history
         self.history_length = len(consumption_history.index)
         self.tariff = tariff
+        self.installed_power_supply = installed_power_supply
 
     def calculate(self) -> GreenPercentileResult:
         percentiles = self.__calculate_percentiles()
@@ -58,9 +61,15 @@ class GreenPercentileCalculator():
                 - percentiles[p_str].off_peak_demand_in_kw
             percentiles[p_str].exceeded_off_peak_demand_in_kw = percentiles[p_str]\
                 .exceeded_off_peak_demand_in_kw.clip(.0)
+            
+            power_generation_factor = self.history_length * StaticGetters.get_power_generation_factor(
+                self.installed_power_supply, 
+                decimal.Decimal(self.tariff.power_generation_tusd_in_reais_per_kw), 
+                [off_peak_demand_in_kw])
 
             # Tem como colocar green_na_tusd_in_reais_per_kw em evidencia
             percentiles[p_str].demand_total_cost_in_reais = \
+                power_generation_factor + \
                 self.tariff.na_tusd_in_reais_per_kw*percentiles[p_str].off_peak_demand_in_kw\
                 + 3*self.tariff.na_tusd_in_reais_per_kw\
                 * (percentiles[p_str].exceeded_peak_demand_in_kw+percentiles[p_str].exceeded_off_peak_demand_in_kw)
