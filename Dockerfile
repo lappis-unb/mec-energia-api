@@ -1,4 +1,4 @@
-FROM python:3.11.9-slim-bookworm as base
+FROM python:3.11.9-slim-bookworm AS base
 
 ARG DJANGO_ENV
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -6,7 +6,7 @@ ENV PYTHONUNBUFFERED 1
 ENV BUILD_ENV=${DJANGO_ENV}
 
 # -----------------------------------------------------------------------------
-FROM base as builder
+FROM base AS builder
 RUN apt-get update && \
     apt-get install -y libpq-dev
 
@@ -17,7 +17,7 @@ RUN pip install --upgrade pip && \
     requirements/${BUILD_ENV}.txt
 
 # -----------------------------------------------------------------------------
-FROM base as runner
+FROM base AS runner
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \

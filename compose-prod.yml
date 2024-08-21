@@ -8,12 +8,12 @@ services:
         context: .
         dockerfile: Dockerfile
         args:
-          - DJANGO_ENV=${ENVIRONMENT:-production}
+          - DJANGO_ENV=${ENVIRONMENT}
     env_file: 
       - ./.envs/.env.prod
     command: ['sh', 'scripts/start_prod.sh']
-    ports:
-      - "${API_PORT:-8000}:${API_PORT:-8000}"
+    expose:
+      - ${API_PORT}
     volumes:
       - static_volume:/app/mepa-api/staticfiles
       - media_volume:/app/mepa-api/mediafiles
@@ -26,7 +26,7 @@ services:
   mepa-db:
     container_name: mepa-db
     restart: unless-stopped
-    image: postgres:${POSTGRES_VERSION:-15.2-bullseye}
+    image: postgres:${POSTGRES_VERSION}
     env_file: 
       - ./.envs/.env.prod
     volumes:

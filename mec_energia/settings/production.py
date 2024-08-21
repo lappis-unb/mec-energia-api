@@ -107,5 +107,6 @@ MEC_ENERGIA_PASSWORD_ENDPOINT_USER_RESET = "definir-senha"
 # SECURE_HSTS_INCLUDE_SUBDOMAINS = env.bool("DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", default=True)
 # SECURE_CONTENT_TYPE_NOSNIFF = env.bool("DJANGO_SECURE_CONTENT_TYPE_NOSNIFF", default=True)
 # SECURE_BROWSER_XSS_FILTER = True
+# SECURE_HSTS_PRELOAD = True
 
 # -----------------------------------------------------------------------------------------------------
