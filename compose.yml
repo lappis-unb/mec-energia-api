@@ -8,7 +8,7 @@ services:
         context: .
         dockerfile: Dockerfile
         args:
-            - DJANGO_ENV=${ENVIRONMENT}
+            - DJANGO_ENV=${ENVIRONMENT:-development}
     env_file: 
       - ./.envs/.env.dev
     command: ['sh', 'scripts/start_dev.sh']

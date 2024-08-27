@@ -7,7 +7,7 @@ services:
         context: .
         dockerfile: Dockerfile
         args:
-          - DJANGO_ENV=${ENVIRONMENT}
+          - DJANGO_ENV=${ENVIRONMENT:-production}
     env_file: 
       - ./.envs/.env.prod
     command: ['sh', 'scripts/start_prod.sh']
