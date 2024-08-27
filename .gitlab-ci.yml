@@ -4,7 +4,7 @@ stages:
   - build
 
 workflow:
-  name: "Pipeline from $CI_PIPELINE_SOURCE (branch: $CI_COMMIT_REF_NAME)"
+  name: 'Pipeline from $CI_PIPELINE_SOURCE (branch: $CI_COMMIT_REF_NAME)'
   rules:
     # Pipeline is triggered on merge request.
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
@@ -15,13 +15,13 @@ workflow:
 # Reference: https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
 variables:
   # Temporary until tags are implemented.
-  VERSION: "1.0.$CI_PIPELINE_IID"
+  VERSION: '1.0.$CI_PIPELINE_IID'
 
 .base-python:
   image: python:3.10.5
-  before_script: 
+  before_script:
     - cd $CI_PROJECT_DIR
-    - cp .env.dev .env  # Copy .env.dev to .env
+    - cp .envs/.env.dev .env # Copy .env.dev to .env
     - pip install -U -r requirements.txt
   variables:
     DJANGO_SETTINGS_MODULE: mec_energia.settings
@@ -32,7 +32,7 @@ variables:
   stage: build
   image:
     name: gcr.io/kaniko-project/executor:v1.14.0-debug
-    entrypoint: [""]
+    entrypoint: ['']
   before_script:
     - echo "Starting to build $CI_REGISTRY_IMAGE:$VERSION"
     - echo "Verifying if the variables are defined"
@@ -88,7 +88,7 @@ unit-test:
     REPORT_PATH: reports
     REPORT_URL: $CI_PAGES_URL/-/jobs/$CI_JOB_ID/artifacts/$REPORT_PATH
   cache:
-    - key: "pytest-cache"
+    - key: 'pytest-cache'
       paths:
         - .pytest_cache
 
@@ -103,7 +103,7 @@ build:
   extends: .kaniko-build
   variables:
     CONTEXT: $CI_PROJECT_DIR
-    EXTRA_ARGS: "--destination $CI_REGISTRY_IMAGE:latest"
+    EXTRA_ARGS: '--destination $CI_REGISTRY_IMAGE:latest'
     DOCKERFILE_PATH: Dockerfile
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == 'push'
