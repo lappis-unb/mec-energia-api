@@ -58,20 +58,6 @@ DATABASES["default"]["ATOMIC_REQUESTS"] = env.bool("POSTGRES_ATOMIC_REQUESTS", d
 DATABASES["default"]["CONN_MAX_AGE"] = env.int("POSTGRES_CONN_MAX_AGE", default=300)
 
 
-# STORAGE CONFIGURATION
-# ------------------------------------------------------------------------------------------------
-# WhiteNoise middleware should be placed directly after the Django SecurityMiddleware 
-
-index = MIDDLEWARE.index("django.middleware.security.SecurityMiddleware")
-MIDDLEWARE.insert(index + 1, "whitenoise.middleware.WhiteNoiseMiddleware")
-
-STORAGES = {
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
-
-
 # MEC ENERGIA
 # ------------------------------------------------------------------------------------------------
 MEC_ENERGIA_URL = env("FRONT_SERVICE_URL")
