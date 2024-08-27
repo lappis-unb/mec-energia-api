@@ -1,4 +1,3 @@
-
 services:
   mepa-api:
     container_name: mepa-api
@@ -32,16 +31,15 @@ services:
     volumes:
       - mepa-prod-data:/var/lib/postgresql/data
     networks:
-        - api-network
-
+      - api-network
 
 volumes:
   mepa-prod-data:
     name: mepa-prod-data
   static_volume:
-    external: true
+    name: static_volume
   media_volume:
-    external: true
+    name: media_volume
 
 networks:
   api-network:
