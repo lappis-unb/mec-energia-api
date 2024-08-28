@@ -133,3 +133,17 @@ REST_FRAMEWORK = {
         "djangorestframework_camel_case.parser.CamelCaseJSONParser",
     ),
 }
+
+# MEC ENERGIA
+# ------------------------------------------------------------------------------------------------
+# Parâmetros de recomendação de contrato
+MINIMUM_ENERGY_BILLS_FOR_RECOMMENDATION = 6
+IDEAL_ENERGY_BILLS_FOR_RECOMMENDATION = 12
+MINIMUM_PERCENTAGE_DIFFERENCE_FOR_CONTRACT_RENOVATION = 0.05
+
+# Valor de demanda mínimo na nova resolução
+NEW_RESOLUTION_MINIMUM_DEMAND = 30
+
+MEC_ENERGIA_PASSWORD_ENDPOINT_FIRST_ACCESS = "definir-senha"
+MEC_ENERGIA_PASSWORD_ENDPOINT_ADMIN_RESET = "redefinir-senha"
+MEC_ENERGIA_PASSWORD_ENDPOINT_USER_RESET = "definir-senha"
