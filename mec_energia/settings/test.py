@@ -13,6 +13,7 @@ env.read_env(ENV_FILE)
 ENVIRONMENT = env("ENVIRONMENT")
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 DEBUG = env.bool("DJANGO_DEBUG", True)
+TEST = env.bool("IS_TESTING", default=False)
 
 ALLOWED_HOSTS = env.list(
     "DJANGO_ALLOWED_HOSTS", 
@@ -33,29 +34,39 @@ CORS_ALLOWED_ORIGINS = env.list(
 
 # DATABASES
 # ------------------------------------------------------------------------------------------------
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "HOST": env("POSTGRES_HOST"),
-        "PORT": env("POSTGRES_PORT"),
-        "NAME": env("POSTGRES_DB"),
-        "USER": env("POSTGRES_USER"),
-        "PASSWORD": env("POSTGRES_PASSWORD"),
+# database with in memory database for pytest.
+if TEST: 
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:'
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "HOST": env("POSTGRES_HOST"),
+            "PORT": env("POSTGRES_PORT"),
+            "NAME": env("POSTGRES_DB"),
+            "USER": env("POSTGRES_USER"),
+            "PASSWORD": env("POSTGRES_PASSWORD"),
+        }
+    }
+
 
 # STORAGE CONFIGURATION
 # ------------------------------------------------------------------------------------------------
 # WhiteNoise middleware should be placed directly after the Django SecurityMiddleware 
+if not TEST:
+    index = MIDDLEWARE.index("django.middleware.security.SecurityMiddleware")
+    MIDDLEWARE.insert(index + 1, "whitenoise.middleware.WhiteNoiseMiddleware")
 
-index = MIDDLEWARE.index("django.middleware.security.SecurityMiddleware")
-MIDDLEWARE.insert(index + 1, "whitenoise.middleware.WhiteNoiseMiddleware")
-
-STORAGES = {
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
+    STORAGES = {
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
 
 
 # MEC ENERGIA
@@ -83,17 +94,29 @@ MEC_ENERGIA_PASSWORD_ENDPOINT_ADMIN_RESET = "redefinir-senha"
 MEC_ENERGIA_PASSWORD_ENDPOINT_USER_RESET = "definir-senha"
 
 
-# DEBUG TOOLBAR
-# ------------------------------------------------------------------------------------------------
-MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
-INSTALLED_APPS += ["debug_toolbar"]
-DEBUG_TOOLBAR_CONFIG = {
-    "SHOW_TOOLBAR_CALLBACK": lambda request: True,
-    "INTERCEPT_REDIRECTS": False,
-    "ALLOWED_HOSTS": ["*"],
-}
-
-
 # DJANGO EXTENSIONS
 # ------------------------------------------------------------------------------------------------
 INSTALLED_APPS += ["django_extensions"]
+
+
+# DEBUG TOOLBAR
+# ------------------------------------------------------------------------------------------------
+if not TEST:
+    MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
+    INSTALLED_APPS += ["debug_toolbar"]
+    DEBUG_TOOLBAR_CONFIG = {
+        "SHOW_TOOLBAR_CALLBACK": lambda request: True,
+        "INTERCEPT_REDIRECTS": False,
+        "ALLOWED_HOSTS": ["*"],
+    }
+
+
+# PYTEST SETTINGS
+# ------------------------------------------------------------------------------------------------
+if TEST :
+    del REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"]
+    del REST_FRAMEWORK["DEFAULT_PARSER_CLASSES"]
+    SOUTH_TESTS_MIGRATE = False
+
+    PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
+    

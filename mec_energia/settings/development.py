@@ -3,7 +3,7 @@
 
 import environ
 
-from .common import *
+from .common import * 
 
 
 env = environ.Env()
@@ -81,13 +81,3 @@ SECURE_CONTENT_TYPE_NOSNIFF = False
 SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
-
-
-# ENVIRONMENT TEST
-# ------------------------------------------------------------------------------------------------
-if ENVIRONMENT == "test":
-    del REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"]
-    del REST_FRAMEWORK["DEFAULT_PARSER_CLASSES"]
-    SOUTH_TESTS_MIGRATE = False
-
-    PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
