@@ -7,8 +7,10 @@ E='\033[0m'
 
 ENV_DEV=.envs/.env.dev
 ENV_TEST=.envs/.env.test
+ENV_PROD=.envs/.env.prod
 COMPOSE_FILE_DEV=compose.yml
 COMPOSE_FILE_TEST=compose-test.yml
+COMPOSE_FILE_PROD=compose-prod.yml
 
 
 define load-env
@@ -83,6 +85,33 @@ up-test:
 
 down-test:
 	docker compose -f $(COMPOSE_FILE_TEST) --env-file $(ENV_TEST) down
+	@$(call clean-dangling)
+
+# --------------------------------------------------------------------------------------------------------------------
+
+build-prod:
+	$(call load-env,$(ENV_PROD))
+	docker compose -f $(COMPOSE_FILE_PROD) --env-file $(ENV_PROD) build
+	@echo ""${B}""${E} "Build completed for "${Y}"test"${E} "environment."
+
+build-nc-prod:
+	$(call load-env,$(ENV_PROD))
+	docker compose -f $(COMPOSE_FILE_PROD) --env-file $(ENV_PROD) build --no-cache --force-rm
+	@echo ""${B}""${E} "Build no-cache completed for "${Y}"test"${E} "environment."
+
+build-up-prod:
+	$(call load-env,$(ENV_PROD))
+	docker compose -f $(COMPOSE_FILE_PROD) --env-file $(ENV_PROD) up --build -d --remove-orphans
+	@echo ""${B}""${E} "Build completed for "${Y}"test"${E}" environment."
+	@$(call wait_for_service)
+
+up-prod:
+	$(call load-env,$(ENV_PROD))
+	docker compose -f $(COMPOSE_FILE_PROD) --env-file $(ENV_PROD) up -d --remove-orphans
+	@$(call wait_for_service)
+
+down-prod:
+	docker compose -f $(COMPOSE_FILE_PROD) --env-file $(ENV_PROD) down
 	@$(call clean-dangling)
 
 # --------------------------------------------------------------------------------------------------------------------
