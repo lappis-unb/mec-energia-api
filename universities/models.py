@@ -14,7 +14,7 @@ from utils.subgroup_util import Subgroup
 
 class University(models.Model):
     name = models.CharField(
-        max_length=50,
+        max_length=100,
         blank=False,
         null=False,
         unique=True,
@@ -50,7 +50,7 @@ class University(models.Model):
 
 class ConsumerUnit(models.Model):
     name = models.CharField(
-        max_length=50,
+        max_length=100,
         verbose_name=_('Nome'),
         help_text=_('Nome da Unidade Consumidora. Ex: Darcy Ribeiro')
     )
