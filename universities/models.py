@@ -166,6 +166,8 @@ class ConsumerUnit(models.Model):
         created_consumer_unit = None
 
         try:
+            Contract.check_is_valid_peak_demand_values(data_contract['peak_contracted_demand_in_kw'], data_contract['off_peak_contracted_demand_in_kw'])
+            
             created_consumer_unit = ConsumerUnit(
                 university_id=data_consumer_unit['university'],
                 name=data_consumer_unit['name'],
@@ -195,6 +197,8 @@ class ConsumerUnit(models.Model):
     @classmethod
     def edit_consumer_unit_and_contract(cls, data_consumer_unit, data_contract):
         try:
+            Contract.check_is_valid_peak_demand_values(data_contract['peak_contracted_demand_in_kw'], data_contract['off_peak_contracted_demand_in_kw'])
+
             consumer_unit = ConsumerUnit.objects.get(id=data_consumer_unit['consumer_unit_id'])
 
             if not consumer_unit:
@@ -234,6 +238,8 @@ class ConsumerUnit(models.Model):
     @classmethod
     def edit_consumer_unit_code_and_create_contract(cls, data_consumer_unit, data_contract):
         try:
+            Contract.check_is_valid_peak_demand_values(data_contract['peak_contracted_demand_in_kw'], data_contract['off_peak_contracted_demand_in_kw'])
+            
             consumer_unit = ConsumerUnit.objects.filter(id=data_consumer_unit['consumer_unit_id']).update(
                 code=data_consumer_unit['code'],
             )

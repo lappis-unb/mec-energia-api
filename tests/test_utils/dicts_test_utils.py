@@ -158,6 +158,17 @@ energy_bill_dict_1 = {
     'off_peak_measured_demand_in_kw': 100.00,
 }
 
+
+energy_bill_dict_2 = {
+    'date': date(year=2024, month=8, day = 1),
+    'invoice_in_reais': 100.00,
+    'is_atypical': False,
+    'peak_consumption_in_kwh': 100.00,
+    'off_peak_consumption_in_kwh': 100.00,
+    'peak_measured_demand_in_kw': 100.00,
+    'off_peak_measured_demand_in_kw': 100.00,
+}
+
 # ---------------------------------------
 # Distribuidoras
 

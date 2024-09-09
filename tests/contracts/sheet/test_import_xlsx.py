@@ -19,7 +19,7 @@ class TestImportXlsx:
         self.contracts_dict = dicts_test_utils.contract_dict_1
         self.distributor_dict = dicts_test_utils.distributor_dict_1
         self.consumer_unit_dict = dicts_test_utils.consumer_unit_dict_1
-        self.energy_bill_dict = dicts_test_utils.energy_bill_dict_1
+        self.energy_bill_dict = dicts_test_utils.energy_bill_dict_2
 
         self.university = create_objects_test_utils.create_test_university(self.university_dict)
         self.user = create_objects_test_utils.create_test_university_user(self.user_dict, self.university)
