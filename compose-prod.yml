@@ -1,7 +1,7 @@
 services:
   mepa-api:
     container_name: mepa-api
-    restart: unless-stopped
+    restart: always
     image: mepa-api:${TAG:-latest-prod}
     build:
         context: .
@@ -24,18 +24,32 @@ services:
 
   mepa-db:
     container_name: mepa-db
-    restart: unless-stopped
+    restart: always
     image: postgres:${POSTGRES_VERSION}
     env_file: 
       - ./.envs/.env.prod
     volumes:
-      - mepa-prod-data:/var/lib/postgresql/data
+      - mepa_prod_data:/var/lib/postgresql/data
+    networks:
+      - api-network
+
+  redis:
+    container_name: redis
+    image: redis:7.0-alpine3.19
+    restart: always
+    command: redis-server --appendonly yes
+    expose:
+      - "6379"
+    volumes:
+      - redis_data:/data
     networks:
       - api-network
 
 volumes:
-  mepa-prod-data:
-    name: mepa-prod-data
+  mepa_prod_data:
+    name: mepa_prod_data
+  redis_data:
+    name: redis_data
   static_volume:
     name: static_volume
   media_volume:
