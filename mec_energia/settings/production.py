@@ -73,12 +73,8 @@ DATABASES["default"]["CONN_MAX_AGE"] = env.int("POSTGRES_CONN_MAX_AGE", default=
 
 # MEC ENERGIA
 # ------------------------------------------------------------------------------------------------
-MEC_ENERGIA_URL = env("FRONT_SERVICE_URL")
+MEPA_FRONT_END_URL = env("FRONT_END_URL")
 RECOMMENDATION_METHOD = env("RECOMMENDATION_METHOD")
-
-# Email
-MEC_ENERGIA_EMAIL = env("FRONT_URL")
-MEC_ENERGIA_EMAIL_APP_PASSWORD = env("MEC_ENERGIA_EMAIL_APP_PASSWORD")
 
 # Password reset
 RESET_PASSWORD_TOKEN_TIMEOUT = env.int("RESET_PASSWORD_TOKEN_TIMEOUT")
