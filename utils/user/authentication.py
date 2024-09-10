@@ -38,7 +38,7 @@ def generate_link_to_reset_password(token, user_first_name, password_status):
     else:
         raise ValueError("Invalid password_status")
     
-    endpoint_string = f'{settings.MEC_ENERGIA_URL}/{endpoint}/'
+    endpoint_string = f'{settings.MEPA_FRONT_END_URL}/{endpoint}/'
     user_first_name = f'?nome={user_first_name}'
     token_string = f'&token={token}'
     

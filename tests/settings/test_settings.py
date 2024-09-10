@@ -22,8 +22,8 @@ def test_var_environment_is_available():
     assert s.ENVIRONMENT == 'test'
 
 @pytest.mark.order(1)    
-def test_var_mec_energia_url_is_available():
-    assert s.MEC_ENERGIA_URL is not None
+def test_var_mepa_front_url_is_available():
+    assert s.MEPA_FRONT_END_URL is not None
 
 @pytest.mark.order(1)    
 def test_var_mec_energia_email_is_available():

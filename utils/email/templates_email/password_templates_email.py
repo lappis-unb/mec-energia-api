@@ -1,8 +1,5 @@
 from django.conf import settings
 
-MEC_ENERGIA_URL = settings.MEC_ENERGIA_URL
-
-
 def template_email_first_access(user_name, university_acronym, link_reset_password_page):
     title = 'Cadastrado na MEPA - Monitoramento de Energia em Plataforma Aberta'
 
@@ -11,7 +8,7 @@ def template_email_first_access(user_name, university_acronym, link_reset_passwo
 
         <p>Olá {user_name},</p>
         
-        <p>Seu cadastrado foi criado na <a href="{MEC_ENERGIA_URL}">MEPA - Monitoramento de Energia em Plataforma Aberta</a> para análise do contrato de fornecimento de energia da(o) {university_acronym}.</p>
+        <p>Seu cadastrado foi criado na <a href="{settings.MEPA_FRONT_END_URL}">MEPA - Monitoramento de Energia em Plataforma Aberta</a> para análise do contrato de fornecimento de energia da(o) {university_acronym}.</p>
 
         Para acessar o sistema, cadastre uma senha clicando no link abaixo:<br>
         <a href="{link_reset_password_page}">{link_reset_password_page}</a>
@@ -33,7 +30,7 @@ def template_email_recovery_password(user_name, link_reset_password_page):
 
         <p>Olá {user_name},</p>
 
-        <p>Você solicitou a redefinição da sua senha de acesso à <a href="{MEC_ENERGIA_URL}">MEPA - Monitoramento de Energia em Plataforma Aberta</a>.</p>
+        <p>Você solicitou a redefinição da sua senha de acesso à <a href="{settings.MEPA_FRONT_END_URL}">MEPA - Monitoramento de Energia em Plataforma Aberta</a>.</p>
 
         Para criar uma nova senha, clique no link abaixo:<br>
         <a href="{link_reset_password_page}">{link_reset_password_page}</a>
@@ -55,7 +52,7 @@ def template_email_recovery_password_by_admin(user_name, link_reset_password_pag
 
         <p>Olá {user_name},</p>
 
-        <p>A redefinição da sua senha de acesso à <a href="{MEC_ENERGIA_URL}">MEPA - Monitoramento de Energia em Plataforma Aberta</a> foi realizada pela administração da plataforma. Sua senha atual foi desativada.</p>
+        <p>A redefinição da sua senha de acesso à <a href="{settings.MEPA_FRONT_END_URL}">MEPA - Monitoramento de Energia em Plataforma Aberta</a> foi realizada pela administração da plataforma. Sua senha atual foi desativada.</p>
 
         Para criar uma nova senha, clique no link abaixo:<br>
         <a href="{link_reset_password_page}">{link_reset_password_page}</a>
