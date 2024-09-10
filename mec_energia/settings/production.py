@@ -41,6 +41,19 @@ CORS_ALLOW_HEADERS = [
 ]
 
 
+# REDIS CACHES
+# ------------------------------------------------------------------------------------------------
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": env("REDIS_URL"),
+    }
+}
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
+
+
 # DATABASES
 # ------------------------------------------------------------------------------------------------
 DATABASES = {
@@ -70,18 +83,3 @@ MEC_ENERGIA_EMAIL_APP_PASSWORD = env("MEC_ENERGIA_EMAIL_APP_PASSWORD")
 # Password reset
 RESET_PASSWORD_TOKEN_TIMEOUT = env.int("RESET_PASSWORD_TOKEN_TIMEOUT")
 RESEND_EMAIL_RESET_PASSWORD_TIMEOUT = env.int("RESEND_EMAIL_RESET_PASSWORD_TIMEOUT")
-
-
-# SECURE CONFIGURATION
-# -----------------------------------------------------------------------------------------------------
-# SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-# SECURE_SSL_REDIRECT = env.bool("DJANGO_SECURE_SSL_REDIRECT", default=True)  # Redireciona todas as requisições HTTP para HTTPS
-# SESSION_COOKIE_SECURE = True  # O cookie de sessão só é enviado em requisições HTTPS
-# CSRF_COOKIE_SECURE = True  # O cookie CSRF só é enviado em requisições HTTPS
-# SECURE_HSTS_SECONDS = 518400
-# SECURE_HSTS_INCLUDE_SUBDOMAINS = env.bool("DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", default=True)
-# SECURE_CONTENT_TYPE_NOSNIFF = env.bool("DJANGO_SECURE_CONTENT_TYPE_NOSNIFF", default=True)
-# SECURE_BROWSER_XSS_FILTER = True
-# SECURE_HSTS_PRELOAD = True
-
-# -----------------------------------------------------------------------------------------------------

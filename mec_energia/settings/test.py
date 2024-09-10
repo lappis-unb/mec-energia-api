@@ -16,32 +16,41 @@ DEBUG = env.bool("DJANGO_DEBUG", True)
 TEST = env.bool("IS_TESTING", default=False)
 
 ALLOWED_HOSTS = env.list(
-    "DJANGO_ALLOWED_HOSTS", 
-    default=["mepa-api", "localhost", "127.0.0.1", "[::1]"]
+    "DJANGO_ALLOWED_HOSTS",
+    default=["mepa-api", "localhost", "127.0.0.1", "[::1]"],
 )
 
 CSRF_TRUSTED_ORIGINS = env.list(
-    "DJANGO_CSRF_TRUSTED_ORIGINS", 
-    default=["http://mepa-api:8000", "http://localhost:3001]"]
+    "DJANGO_CSRF_TRUSTED_ORIGINS",
+    default=[
+        "http://mepa-api:8000",
+        "http://localhost:3001",
+        "http://localhost:8000",
+    ],
 )
 
 CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOWED_ORIGINS = env.list(
-    "DJANGO_CORS_ALLOWED_ORIGINS", 
-    default=["http://localhost:3001"]
-)
+CORS_ALLOWED_ORIGINS = env.list("DJANGO_CORS_ALLOWED_ORIGINS", default=["http://localhost:3001"])
+
+
+# REDIS CACHES
+# ------------------------------------------------------------------------------------------------
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": env("REDIS_URL"),
+    }
+}
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
 
 
 # DATABASES
 # ------------------------------------------------------------------------------------------------
 # database with in memory database for pytest.
-if TEST: 
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': ':memory:'
-        }
-    }
+if TEST:
+    DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memory:"}}
 else:
     DATABASES = {
         "default": {
@@ -57,7 +66,7 @@ else:
 
 # STORAGE CONFIGURATION
 # ------------------------------------------------------------------------------------------------
-# WhiteNoise middleware should be placed directly after the Django SecurityMiddleware 
+# WhiteNoise middleware should be placed directly after the Django SecurityMiddleware
 if not TEST:
     index = MIDDLEWARE.index("django.middleware.security.SecurityMiddleware")
     MIDDLEWARE.insert(index + 1, "whitenoise.middleware.WhiteNoiseMiddleware")
@@ -101,10 +110,9 @@ if not TEST:
 
 # PYTEST SETTINGS
 # ------------------------------------------------------------------------------------------------
-if TEST :
+if TEST:
     del REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"]
     del REST_FRAMEWORK["DEFAULT_PARSER_CLASSES"]
     SOUTH_TESTS_MIGRATE = False
 
     PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
-    
