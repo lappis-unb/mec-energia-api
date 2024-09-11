@@ -15,11 +15,8 @@ class Domain:
         self.errors = []
         self.warnings = []
 
-    def _exceeded_demand (self, meassured_demand: .0, contracted_demand: .0) -> .0 :
-        if meassured_demand <= contracted_demand :
-            return 0
-        else :
-            return  meassured_demand - contracted_demand
+    def _exceeded_demand (self, meassured_demand: .0, contracted_demand) -> .0 :
+        return max(.0, meassured_demand - contracted_demand)
 
     def mount(self):
         try:
@@ -71,18 +68,22 @@ class Domain:
 
     def green_objective_func(self, demands) -> .0 :
         demand_value = 0
+        demand = round(demands[0])
         for bill in self.base_consumption_history:
-            demand_value += demands[0] + 3 * (self._exceeded_demand(bill[2], demands[0]) + \
-                                 self._exceeded_demand(bill[3], demands[0]))
+            demand_value += demand + 3 * (self._exceeded_demand(bill[2], demand) + self._exceeded_demand(bill[3], demand))
 
-        return float(self.green.na_tusd_in_reais_per_kw) * demand_value + self.consumption_cost_on_green
+        power_generation_factor = self.consumption_history_length * StaticGetters.get_power_generation_factor(self.consumer_unit.total_installed_power, self.green.power_generation_tusd_in_reais_per_kw, demands)
+        return float(self.green.na_tusd_in_reais_per_kw) * demand_value + power_generation_factor + self.consumption_cost_on_green - demand
 
     def blue_objective_func(self, demands) -> .0 :
         peak_demand_value = 0
         off_peak_demand_value = 0
+        peak_demand, off_peak_demand = round(demands[0]), round(demands[1])
         for bill in self.base_consumption_history:
-            peak_demand_value += demands[0] + 3 * self._exceeded_demand(bill[2], demands[0])
-            off_peak_demand_value += demands[1] + 3 * self._exceeded_demand(bill[3], demands[1])
+            peak_demand_value += peak_demand + 3 * self._exceeded_demand(bill[2], peak_demand)
+            off_peak_demand_value += off_peak_demand + 3 * self._exceeded_demand(bill[3], off_peak_demand)
 
+        power_generation_factor = self.consumption_history_length * StaticGetters.get_power_generation_factor(self.consumer_unit.total_installed_power, self.blue.power_generation_tusd_in_reais_per_kw, demands)
         return (float(self.blue.peak_tusd_in_reais_per_kw) * peak_demand_value) + \
-               (float(self.blue.off_peak_tusd_in_reais_per_kw) * off_peak_demand_value) + self.consumption_cost_on_blue
+               (float(self.blue.off_peak_tusd_in_reais_per_kw) * off_peak_demand_value) + \
+               power_generation_factor + self.consumption_cost_on_blue - peak_demand - off_peak_demand

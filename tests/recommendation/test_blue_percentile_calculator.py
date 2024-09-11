@@ -16,7 +16,7 @@ def test_blue_per_calculator(code: str):
     data = test_cases[code]
     data.consumption_history.peak_exceeded_in_kw = StaticGetters.get_exceeded_demand_column(data.consumption_history.peak_measured_demand_in_kw, data.consumption_history.contract_peak_demand_in_kw)
     data.consumption_history.off_peak_exceeded_in_kw = StaticGetters.get_exceeded_demand_column(data.consumption_history.off_peak_measured_demand_in_kw, data.consumption_history.contract_off_peak_demand_in_kw)
-    sut = BluePercentileCalculator(data.consumption_history, data.blue_tariff)
+    sut = BluePercentileCalculator(data.consumption_history, data.blue_tariff, None)
     result = sut.calculate()
 
     # teste percentiles

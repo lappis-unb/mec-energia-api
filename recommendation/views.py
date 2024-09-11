@@ -75,14 +75,14 @@ class RecommendationViewSet(ViewSet):
                 blue_tariff=blue,
                 green_tariff=green,
                 sub_group=contract.subgroup,
-                cur_demand_values=(contract.peak_contracted_demand_in_kw, contract.off_peak_contracted_demand_in_kw)
+                total_installed_power=consumer_unit.total_installed_power
             )
 
         recommendation = None
         current_contract = calculator.current_contract if calculator else DataFrame()
 
         if calculator and has_enough_energy_bills:
-            recommendation = calculator.calculate(consumer_unit.total_installed_power)
+            recommendation = calculator.calculate()
             if recommendation:
                 fill_with_pending_dates(recommendation, consumption_history, pending_bills_dates)
         else:
