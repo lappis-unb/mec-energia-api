@@ -27,7 +27,6 @@ postgres-data/
 
 # Diretórios que não são necessários para a construção ou execução
 tests
-docs
 examples
 reports
 tmp
