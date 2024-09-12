@@ -48,21 +48,7 @@ class University(models.Model):
     )
 
 
-class ConsumerUnitManager(models.Manager):
-    def create(self, *args, **kwargs):
-        with transaction.atomic():
-            try:
-                obj = self.model(*args, **kwargs)
-
-                obj.check_if_consumer_unit_has_contract()
-            except Exception as e:
-                raise e
-            
-            return obj
-        
 class ConsumerUnit(models.Model):
-    objects = ConsumerUnitManager()
-
     name = models.CharField(
         max_length=100,
         verbose_name=_('Nome'),
