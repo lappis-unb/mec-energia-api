@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from datetime import datetime
 
 import os
 import pandas as pd
@@ -21,6 +22,12 @@ class Command(BaseCommand):
             return
 
         tariffs = pd.read_excel(TARIFFS_SHEET_PATH, usecols=COLUMNS, decimal=',', date_format='dd/MM/yyyy')
+
+        tariffs['Fim Vigência'] = pd.to_datetime(tariffs['Fim Vigência'], format='%d/%m/%Y')
+
+        today = datetime.today()
+
+        tariffs = tariffs[tariffs['Fim Vigência'] > today]
 
         tariffs['Unidade'] = tariffs['Unidade'].str.replace('R$/', '')
         
