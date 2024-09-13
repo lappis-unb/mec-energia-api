@@ -20,7 +20,7 @@ class UserTokenManager(models.Manager):
     
     def get_user_users_waiting_to_send_email(self):
         expiration_time = timezone.now() - timedelta(minutes=settings.RESEND_EMAIL_RESET_PASSWORD_TIMEOUT)
-        tokens = self.filter(invalid_tried_at__gt = expiration_time)
+        tokens = self.filter(invalid_tried_at__lte=expiration_time)
 
         return CustomUser.objects.filter(id__in = tokens.values_list('user_id', flat=True))
     
