@@ -8,7 +8,7 @@ class Command(BaseCommand):
     help = "Send email for all invalid trieds tokens"
 
     def handle(self, *args, **options) -> None:
-        print('Envio de email par tokens inválidos está funcionando ||', datetime.now())
+        print('Envio de email para tokens inválidos está funcionando ||', datetime.now())
 
         users = UserToken.objects.get_user_users_waiting_to_send_email()
             
