@@ -18,6 +18,7 @@ from users.authentications import (
 )
 from users.urls import router as users_router
 
+from .views import ClearCacheView
 from .schema import Schema
 
 router = DefaultRouter()
@@ -40,6 +41,7 @@ urlpatterns = [
     path(r"api/reset-password/confirm", ConfirmResetPassword.as_view()),
     path(r"api/", include(router.urls), name="api-root"),
     path("api/swagger/schema/", schema_view.with_ui("swagger", cache_timeout=0)),
+    path('clear-cache/', ClearCacheView.as_view(), name='clear_cache'),
 ]
 
 if settings.DEBUG:
