@@ -231,3 +231,45 @@ if TEST:
     del REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES']
     del REST_FRAMEWORK['DEFAULT_PARSER_CLASSES']
     SOUTH_TESTS_MIGRATE = False
+
+# Verificar se a variável de ambiente LOG_LEVEL está sendo carregada corretamente
+LOG_LEVEL = os.getenv('LOG_LEVEL', 'DEBUG')
+# diretório de logs
+LOG_DIR = Path('logs')
+# Criar o diretório de logs se não existir
+LOG_DIR.mkdir(parents=True, exist_ok=True)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': LOG_LEVEL,
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'file': {
+            'level': LOG_LEVEL,
+            'class': 'logging.FileHandler',
+            'filename': LOG_DIR / 'django.log',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': LOG_LEVEL,
+            'propagate': True,
+        },
+    },
+}
