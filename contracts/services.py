@@ -75,10 +75,9 @@ class ContractServices:
             value = row.get(field, "")
             if isinstance(value, str):
                 try: 
-                    value = value.replace(',', '.')
+                    value = float(value.replace(',', '.'))
                     if value > max_value:
                         errors[field].append(EnergyBillValueError if field=='invoice_in_reais' else ValueMaxError)
-                    value = float(value)
                 except: 
                     row[field] = value
                     if(value != ""):
@@ -90,6 +89,7 @@ class ContractServices:
 
             else: 
                 if value > max_value:
+                    row[field] = value
                     errors[field].append(EnergyBillValueError if field=='invoice_in_reais' else ValueMaxError)            
 
         if row.get('invoice_in_reais') == '':
