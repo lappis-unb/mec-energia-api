@@ -10,12 +10,12 @@ from django.db import IntegrityError
 from django.conf import settings
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
-from django.core.cache import cache
 
 from drf_yasg.utils import swagger_auto_schema
 
 from utils.endpoints_util import EndpointsUtils
 from utils.tariff_util import response_tariffs_of_distributor
+from utils.mixins.cache_mixin import CachedViewSetMixin
 from users.requests_permissions import RequestsPermissions
 from universities.models import ConsumerUnit
 
@@ -30,7 +30,7 @@ from .serializers import (
 )
 
 
-class DistributorViewSet(ModelViewSet):
+class DistributorViewSet(CachedViewSetMixin, ModelViewSet):
     queryset = Distributor.objects.all()
     serializer_class = DistributorSerializer
     cache_key_prefix = "distributor_viewset"
@@ -120,6 +120,7 @@ class DistributorViewSet(ModelViewSet):
         return Response(serializer.data)
 
     @swagger_auto_schema(responses={200: ConsumerUnitsSeparatedBySubgroupSerializerForDocs()})
+    @method_decorator(cache_page(cache_timeout, key_prefix=cache_key_prefix))
     @action(detail=True, methods=["get"], url_path="consumer-units-by-subgroup")
     def consumer_units_separated_by_subgroup(self, request: Request, pk=None):
         user_types_with_permission = RequestsPermissions.university_user_permissions
@@ -139,6 +140,7 @@ class DistributorViewSet(ModelViewSet):
     @swagger_auto_schema(
         responses={200: GetTariffsOfDistributorForDocs()}, query_serializer=GetTariffsOfDistributorParamsSerializer
     )
+    @method_decorator(cache_page(cache_timeout, key_prefix=cache_key_prefix))
     @action(detail=True, methods=["get"], url_path="get-tariffs")
     def get_blue_and_green_tariffs(self, request: Request, pk=None):
         user_types_with_permission = RequestsPermissions.default_users_permissions
@@ -169,14 +171,12 @@ class DistributorViewSet(ModelViewSet):
 
         return Response(response, status.HTTP_200_OK)
 
-    def delete_view_cache(self):
-        keys_pattern = f"*.{self.cache_key_prefix}.*"
-        cache.delete_pattern(keys_pattern)
 
-
-class TariffViewSet(ViewSet):
+class TariffViewSet(CachedViewSetMixin, ViewSet):
     queryset = Tariff.objects.all()
     serializer_class = BlueAndGreenTariffsSerializer
+    cache_key_prefix = "tariff_viewset"
+    cache_timeout = 3600 * 24
 
     @swagger_auto_schema(request_body=BlueAndGreenTariffsSerializer)
     def create(self, request: Request):
@@ -215,6 +215,7 @@ class TariffViewSet(ViewSet):
         except Exception as e:
             raise e
 
+        self.delete_view_cache()
         return Response(ser.data, status=status.HTTP_201_CREATED)
 
     def _handle_integrity_error(self, error: IntegrityError):
@@ -278,7 +279,8 @@ class TariffViewSet(ViewSet):
                 "green": green_tariff,
             }
         )
-
+        
+        self.delete_view_cache()
         return Response(ser.data)
 
 

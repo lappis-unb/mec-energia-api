@@ -1,25 +1,27 @@
-from rest_framework import viewsets, status
+from rest_framework import status
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.request import Request
 from drf_yasg.utils import swagger_auto_schema
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
-from django.core.cache import cache
+from django.core.exceptions import ValidationError
 
 from users.requests_permissions import RequestsPermissions
 from users.models import CustomUser
 from users.models import UniversityUser
+from utils.mixins.cache_mixin import CachedViewSetMixin
 from .models import ConsumerUnit, University
 from . import serializers
 
 
-class UniversityViewSet(viewsets.ModelViewSet):
+class UniversityViewSet(CachedViewSetMixin, ModelViewSet):
     queryset = University.objects.all()
     serializer_class = serializers.UniversitySerializer
     http_method_names = ["post", "put", "get"]
     cache_key_prefix = "university_viewset"
-    cache_timeout = 3600 * 6
+    cache_timeout = 3600 * 168  # 3600 segundos * 168 (dados raramente mudam)
 
     def create(self, request, *args, **kwargs):
         user_types_with_permission = RequestsPermissions.super_user_permissions
@@ -59,7 +61,7 @@ class UniversityViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status.HTTP_200_OK)
 
     @method_decorator(cache_page(cache_timeout, key_prefix=cache_key_prefix))
-    def retrieve(self, request, pk=None):
+    def retrieve(self, request, *args, **kwargs):
         user_types_with_permission = RequestsPermissions.default_users_permissions
         university = self.get_object()
 
@@ -71,17 +73,13 @@ class UniversityViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(university)
         return Response(serializer.data)
 
-    def delete_view_cache(self):
-        keys_pattern = f"*.{self.cache_key_prefix}.*"
-        cache.delete_pattern(keys_pattern)
 
-
-class ConsumerUnitViewSet(viewsets.ModelViewSet):
+class ConsumerUnitViewSet(CachedViewSetMixin, ModelViewSet):
     queryset = ConsumerUnit.objects.all()
     serializer_class = serializers.ConsumerUnitSerializer
     http_method_names = ["get", "post", "put"]
     cache_key_prefix = "consumer_units_viewset"
-    cache_timeout = 3600 * 6
+    cache_timeout = 3600 * 168  # 3600 segundos * 168 (dados raramente mudam)
 
     def create(self, request, *args, **kwargs):
         user_types_with_permission = RequestsPermissions.university_user_permissions
@@ -142,7 +140,7 @@ class ConsumerUnitViewSet(viewsets.ModelViewSet):
                 consumer_units = ConsumerUnit.check_insert_is_favorite_on_consumer_units(
                     consumer_units, request.user.id
                 )
-        except:
+        except Exception as error:
             return Response(
                 {"detail": f"Error in searching if the consumer unit is the user`s favorite - {error}"},
                 status.HTTP_400_BAD_REQUEST,
@@ -178,13 +176,12 @@ class ConsumerUnitViewSet(viewsets.ModelViewSet):
                 status.HTTP_400_BAD_REQUEST,
             )
 
-        return Response(consumer_unit)
+        return Response(consumer_unit, status.HTTP_200_OK)
 
     @swagger_auto_schema(request_body=serializers.CreateConsumerUnitAndContractSerializerForDocs)
     @action(detail=False, methods=["post"])
     def create_consumer_unit_and_contract(self, request, pk=None):
         user_types_with_permission = RequestsPermissions.university_user_permissions
-
         data = request.data
 
         params_serializer = serializers.CreateConsumerUnitAndContractSerializerForDocs(data=request.data)
@@ -201,9 +198,12 @@ class ConsumerUnitViewSet(viewsets.ModelViewSet):
         try:
             ConsumerUnit.create_consumer_unit_and_contract(data["consumer_unit"], data["contract"])
 
-            return Response({"Consumer Unit and Contract created"})
-        except Exception as error:
-            raise Exception(str(error))
+            self.delete_related_view_cache(
+                additional_viewsets=["contracts.views.ContractViewSet", "universities.views.ConsumerUnitViewSet"]
+            )
+            return Response({"message": "Consumer Unit and Contract created successfully"}, status=status.HTTP_200_OK)
+        except ValidationError as error:
+            return Response({"error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(request_body=serializers.CreateConsumerUnitAndContractSerializerForDocs)
     @action(detail=False, methods=["post"])
@@ -225,9 +225,13 @@ class ConsumerUnitViewSet(viewsets.ModelViewSet):
         try:
             ConsumerUnit.edit_consumer_unit_and_contract(data["consumer_unit"], data["contract"])
 
-            return Response({"Consumer Unit and Contract edited"})
-        except Exception as error:
-            raise Exception(str(error))
+            self.delete_related_view_cache(
+                additional_viewsets=["contracts.views.ContractViewSet", "universities.views.ConsumerUnitViewSet"]
+            )
+
+            return Response({"message": "Consumer Unit and Contract edited successfully"}, status=status.HTTP_200_OK)
+        except ValidationError as error:
+            return Response({"error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(request_body=serializers.EditConsumerUnitCodeAndCreateContractSerializerForDocs)
     @action(detail=False, methods=["post"])
@@ -252,10 +256,13 @@ class ConsumerUnitViewSet(viewsets.ModelViewSet):
         try:
             ConsumerUnit.edit_consumer_unit_code_and_create_contract(data["consumer_unit"], data["contract"])
 
-            return Response({"Consumer Unit and Contract created"})
-        except Exception as error:
-            raise Exception(str(error))
+            self.delete_related_view_cache(
+                additional_viewsets=["contracts.views.ContractViewSet", "universities.views.ConsumerUnitViewSet"]
+            )
 
-    def delete_view_cache(self):
-        keys_pattern = f"*.{self.cache_key_prefix}.*"
-        cache.delete_pattern(keys_pattern)
+            return Response(
+                {"message": "Consumer Unit edited and Contract created successfully"},
+                status=status.HTTP_200_OK,
+            )
+        except ValidationError as error:
+            return Response({"error": str(error)}, status=status.HTTP_400_BAD_REQUEST)

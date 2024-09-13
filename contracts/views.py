@@ -1,28 +1,30 @@
 import os
 from datetime import datetime
 
-from rest_framework import viewsets, status
+from rest_framework import status
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.request import Request
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
-from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from django.http import FileResponse
+
 from drf_yasg.utils import swagger_auto_schema
 
 from universities.models import ConsumerUnit
 from users.requests_permissions import RequestsPermissions
+from utils.mixins.cache_mixin import CachedViewSetMixin
 from utils.subgroup_util import Subgroup
 from . import models
 from . import serializers
 from . import services
 
 
-class ContractViewSet(viewsets.ModelViewSet):
+class ContractViewSet(CachedViewSetMixin, ModelViewSet):
     queryset = models.Contract.objects.all()
     serializer_class = serializers.ContractSerializer
     cache_key_prefix = "contract_viewset"
@@ -106,6 +108,7 @@ class ContractViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @swagger_auto_schema(responses={200: serializers.ListSubgroupsSerializerForDocs(many=True)})
+    @method_decorator(cache_page(cache_timeout, key_prefix=cache_key_prefix))
     @action(detail=False, methods=["get"], url_path="list-subgroups")
     def list_subgroups(self, request: Request, pk=None):
         try:
@@ -118,6 +121,7 @@ class ContractViewSet(viewsets.ModelViewSet):
     @swagger_auto_schema(
         query_serializer=serializers.ContractListParamsSerializer, responses={200: serializers.ContractListSerializer}
     )
+    @method_decorator(cache_page(cache_timeout, key_prefix=cache_key_prefix))
     @action(detail=False, methods=["get"], url_path="get-current-contract-of-consumer-unit")
     def get_current_contract_of_consumer_unit(self, request: Request, pk=None):
         user_types_with_permission = RequestsPermissions.university_user_permissions
@@ -145,16 +149,12 @@ class ContractViewSet(viewsets.ModelViewSet):
         serializer = serializers.ContractListSerializer(contract, many=False, context={"request": request})
         return Response(serializer.data, status.HTTP_200_OK)
 
-    def delete_view_cache(self):
-        keys_pattern = f"*.{self.cache_key_prefix}.*"
-        cache.delete_pattern(keys_pattern)
 
-
-class EnergyBillViewSet(viewsets.ModelViewSet):
+class EnergyBillViewSet(CachedViewSetMixin, ModelViewSet):
     queryset = models.EnergyBill.objects.all()
     serializer_class = serializers.EnergyBillSerializer
     cache_key_prefix = "energybill_viewset"
-    cache_timeout = 3600 * 6
+    cache_timeout = 3600 * 168  # 3600 segundos * 24  = 1 dia (dados nao mudam com frequência)
 
     def create(self, request, *args, **kwargs):
         consumer_unit_id = request.data.get("consumer_unit")
@@ -261,12 +261,16 @@ class EnergyBillViewSet(viewsets.ModelViewSet):
                 serializer.save()
                 response_data.append(serializer.data)
 
+        self.delete_related_view_cache(additional_viewsets=[
+            "contracts.views.EnergyBillViewSet",
+            "contracts.views.ContractViewSet",
+            "universities.views.ConsumerUnitViewSet",
+        ])
         return Response({"created": response_data}, status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(method="post")
     @action(detail=False, methods=["post"], url_path="upload")
     def upload_csv(self, request, *args, **kwargs):
-        errors = []
         energy_bill_data = []
         serializer = serializers.CSVFileSerializer(data=request.data)
         if not serializer.is_valid():
@@ -294,7 +298,3 @@ class EnergyBillViewSet(viewsets.ModelViewSet):
             return FileResponse(open(file_path, "rb"), as_attachment=True, filename=os.path.basename(file_path))
         else:
             return Response("Document does not exist", status=400)
-
-    def delete_view_cache(self):
-        keys_pattern = f"*.{self.cache_key_prefix}.*"
-        cache.delete_pattern(keys_pattern)
