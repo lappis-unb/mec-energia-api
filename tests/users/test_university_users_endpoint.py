@@ -108,7 +108,7 @@ class TestUsersEndpoint:
 
     def test_add_consumer_unit_to_favorite(self):
         endpoint = f'{ENDPOINT_USER_UNIVERSITY}{self.user.id}/favorite-consumer-units/'
-        print(self.consumer_units[0].id)
+
         response = self._add_to_favorite_request(endpoint, self.consumer_units[0].id)
 
         assert status.HTTP_200_OK == response.status_code

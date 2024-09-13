@@ -1,4 +1,5 @@
 from datetime import date
+from contracts.models import Contract
 
 # ---------------------------------------
 # Universidades
@@ -38,6 +39,14 @@ consumer_unit_dict_4 = {
     'name': 'Faculdade de Planaltina',
     'code': '222222222',
     'is_active': True,
+}
+
+consumer_unit_dict_5 = {
+    'name': 'Teste',
+    'code': '421412123',
+    'is_active': True,
+    'oldest_contract.start_date': date(year=2050, month=1, day=1),
+    'current_contract.start_date': date(year=2051, month=1, day=1),
 }
 
 # ---------------------------------------
@@ -116,11 +125,42 @@ contract_dict_9_wrong_subgroup = {
     'off_peak_contracted_demand_in_kw': 250.00,
 }
 
+contract_dict_10= {
+    'end_date': date(year=2050, month = 2, day = 1),
+    'start_date': date(year=2050, month = 2, day = 1),
+    ''
+    'tariff_flag': 'V',
+    'supply_voltage': 100.00,
+    'peak_contracted_demand_in_kw': 100.00,
+    'off_peak_contracted_demand_in_kw': 100.00,
+}
+
+contract_dict_11= {
+    'start_date': date(year=2050, month = 1, day = 1),
+    'tariff_flag': 'V',
+    'supply_voltage': 100.00,
+    'peak_contracted_demand_in_kw': 100.00,
+    'off_peak_contracted_demand_in_kw': 100.00,
+}
+
+
+
 # ---------------------------------------
 # Conta de Luz
 
 energy_bill_dict_1 = {
     'date': date.today(),
+    'invoice_in_reais': 100.00,
+    'is_atypical': False,
+    'peak_consumption_in_kwh': 100.00,
+    'off_peak_consumption_in_kwh': 100.00,
+    'peak_measured_demand_in_kw': 100.00,
+    'off_peak_measured_demand_in_kw': 100.00,
+}
+
+
+energy_bill_dict_2 = {
+    'date': date(year=2024, month=8, day = 1),
     'invoice_in_reais': 100.00,
     'is_atypical': False,
     'peak_consumption_in_kwh': 100.00,

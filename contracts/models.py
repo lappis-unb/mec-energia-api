@@ -93,6 +93,11 @@ class Contract(models.Model):
         blank=True
     )
 
+    @classmethod
+    def check_is_valid_peak_demand_values(cls, peak_contracted_demand_in_kw, off_peak_contracted_demand_in_kw):
+        if peak_contracted_demand_in_kw < 30 or off_peak_contracted_demand_in_kw < 30:
+            raise Exception('Um contrato não pode ter valores de demanda inferiores a 30kW')
+
     def check_start_date_create_contract(self):
         if self.consumer_unit.current_contract:
             if self.start_date <= self.consumer_unit.current_contract.start_date:
@@ -106,7 +111,7 @@ class Contract(models.Model):
 
     def check_start_date_is_valid(self):
         if self.end_date:
-            return
+            return 
 
         consumer_unit = self.consumer_unit
 
@@ -138,17 +143,26 @@ class EnergyBill(models.Model):
                 self.date = datetime.strptime(self.date, '%Y-%m-%d').date()
             except ValueError:
                 raise ValueError(
-                    "Invalid date format. Please use 'YYYY-MM-DD'.")
+                    "Formato de data inválido. Por favor use 'YYYY-MM-DD'.")
         if self.date > date.today():
             raise Exception(
-                "Energy bill data cannot be later than current data.")
+                "A data da fatura não pode ser posterior à data atual.")
 
         if self.date < self.consumer_unit.oldest_contract.start_date:
             raise Exception(
-                "Energy Bill date cannot be earlier than the oldest contract start date.")
+                "A data da fatura não pode ser anterior à data de início do contrato mais antigo.")
 
         if not EnergyBillUtils.check_valid_consumption_demand(self):
-            raise Exception('Consumption and demand field cannot be 0.')
+            raise Exception('O campo de consumo e demanda não pode ser 0.')
+        
+        existing_energy_bill = EnergyBill.objects.filter(
+            consumer_unit = self.consumer_unit,
+            date__year = self.date.year,
+            date__month = self.date.month
+        ).exclude(id = self.id).exists()
+
+        if existing_energy_bill:
+            raise Exception("Já existe uma fatura cadastrada para este mês.")
 
         super().save(*args, **kwargs)
 
@@ -180,28 +194,28 @@ class EnergyBill(models.Model):
 
     peak_consumption_in_kwh = models.DecimalField(
         decimal_places=2,
-        max_digits=10,
+        max_digits=9,
         null=True,
-        blank=True
+        blank=True,
     )
 
     off_peak_consumption_in_kwh = models.DecimalField(
         decimal_places=2,
-        max_digits=10,
+        max_digits=9,
         null=True,
         blank=True
     )
 
     peak_measured_demand_in_kw = models.DecimalField(
         decimal_places=2,
-        max_digits=10,
+        max_digits=9,
         null=True,
         blank=True
     )
 
     off_peak_measured_demand_in_kw = models.DecimalField(
         decimal_places=2,
-        max_digits=10,
+        max_digits=9,
         null=True,
         blank=True
     )
@@ -262,6 +276,8 @@ class EnergyBill(models.Model):
 
         if oldest_contract and latest_contract:
             if date >= oldest_contract.start_date or date >= latest_contract.start_date:
-                return True
+                return True, None
 
-        return False
+            return False, max(oldest_contract.start_date, latest_contract.start_date)
+
+        return False, None

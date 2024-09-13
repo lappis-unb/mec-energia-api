@@ -33,8 +33,12 @@ class EnergyBillUtils:
 
         while (year >= start_date_year):
             years[str(year)] = []
+            start_month = 0
 
-            for i in range(12, 0, -1):
+            if start_date.year == year:
+                start_month = start_date.month - 1
+
+            for i in range(12, start_month, -1):
                 month = i
 
                 date = cls.create_energy_bill_date(month, year)

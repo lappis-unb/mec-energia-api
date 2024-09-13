@@ -8,11 +8,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options) -> None:
         users = UserToken.objects.get_user_users_waiting_to_send_email()
-
-        if not users:
-            print('Nenhum usuário para mandar email', flush = True)
-        else:
-            print('--------------------------------')
             
         for user in users:
             if user.account_password_status == 'first_access':
