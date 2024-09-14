@@ -22,7 +22,10 @@ define wait_for_service
 	@echo ""${Y}"󰞌"${E} "Waiting service at "${Y}"$(API_URL)"${E}"..."
 	@echo "For more details, run: docker logs -f mepa-api"
 	@echo
-	@while ! curl --output /dev/null --silent --head --fail $(API_URL); do \
+	@timeout=300 # 5 minutes
+	@start_time=$$(date +%s)
+	@while ! (curl --output /dev/null --silent --head --fail $(API_URL) || \
+              docker logs mepa-api 2>&1 | grep -q "Listening at: http://0.0.0.0:8000"); do \
 		printf "\r󱍸 Checking.  ";  sleep 1; \
 		printf "\r󱍸 Checking.. ";  sleep 1; \
 		printf "\r󱍸 Checking...";  sleep 1; \
@@ -32,25 +35,24 @@ define wait_for_service
 endef
 
 define clean-dangling
-	@echo ""
-	@echo ""${Y}""${E}" Removing unused (dangling) Docker images."
+	@echo "\n"${Y}""${E}" Removing unused (dangling) Docker images."
 	docker image prune -f --filter "dangling=true"
 endef
 
 build:
 	$(call load-env,$(ENV_DEV))
 	docker compose -f $(COMPOSE_FILE_DEV) --env-file $(ENV_DEV) build
-	@echo ""${B}""${E}" Build completed for "${Y}"develop"${E}" environment."
+	@echo "\n"${B}""${E}" Build completed for "${Y}"develop"${E}" environment."
 
 build-nc:
 	$(call load-env,$(ENV_DEV))
 	docker compose -f $(COMPOSE_FILE_DEV) --env-file $(ENV_DEV) build --no-cache --force-rm
-	@echo ""${B}""${E} "Build no-cache completed for "${Y}"develop"${E}" environment."
+	@echo "\n"${B}""${E} "Build no-cache completed for "${Y}"develop"${E}" environment."
 
 build-up:
 	$(call load-env,$(ENV_DEV))
 	docker compose -f $(COMPOSE_FILE_DEV) --env-file $(ENV_DEV) up --build -d --remove-orphans
-	@echo ""${B}""${E}" Build completed for "${Y}"develop"${E}" environment."
+	@echo "\n"${B}""${E}" Build completed for "${Y}"develop"${E}" environment."
 
 up:
 	$(call load-env,$(ENV_DEV))
@@ -65,17 +67,17 @@ down:
 build-test:
 	$(call load-env,$(ENV_TEST))
 	docker compose -f $(COMPOSE_FILE_TEST) --env-file $(ENV_TEST) build
-	@echo ""${B}""${E} "Build completed for "${Y}"test"${E} "environment."
+	@echo "\n"${B}""${E} "Build completed for "${Y}"test"${E} "environment."
 
 build-nc-test:
 	$(call load-env,$(ENV_TEST))
 	docker compose -f $(COMPOSE_FILE_TEST) --env-file $(ENV_TEST) build --no-cache --force-rm
-	@echo ""${B}""${E} "Build no-cache completed for "${Y}"test"${E} "environment."
+	@echo "\n"${B}""${E} "Build no-cache completed for "${Y}"test"${E} "environment."
 
 build-up-test:
 	$(call load-env,$(ENV_TEST))
 	docker compose -f $(COMPOSE_FILE_TEST) --env-file $(ENV_TEST) up --build -d --remove-orphans
-	@echo ""${B}""${E} "Build completed for "${Y}"test"${E}" environment."
+	@echo "\n"${B}""${E} "Build completed for "${Y}"test"${E}" environment."
 	@$(call wait_for_service)
 
 up-test:
@@ -92,17 +94,17 @@ down-test:
 build-prod:
 	$(call load-env,$(ENV_PROD))
 	docker compose -f $(COMPOSE_FILE_PROD) --env-file $(ENV_PROD) build
-	@echo ""${B}""${E} "Build completed for "${Y}"test"${E} "environment."
+	@echo "\n"${B}""${E} "Build completed for "${Y}"production"${E} "environment."
 
 build-nc-prod:
 	$(call load-env,$(ENV_PROD))
 	docker compose -f $(COMPOSE_FILE_PROD) --env-file $(ENV_PROD) build --no-cache --force-rm
-	@echo ""${B}""${E} "Build no-cache completed for "${Y}"test"${E} "environment."
+	@echo "\n"${B}""${E} "Build no-cache completed for "${Y}"production"${E} "environment."
 
 build-up-prod:
 	$(call load-env,$(ENV_PROD))
 	docker compose -f $(COMPOSE_FILE_PROD) --env-file $(ENV_PROD) up --build -d --remove-orphans
-	@echo ""${B}""${E} "Build completed for "${Y}"test"${E}" environment."
+	@echo "\n"${B}""${E} "Build completed for "${Y}"production"${E}" environment."
 	@$(call wait_for_service)
 
 up-prod:
