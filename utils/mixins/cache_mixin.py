@@ -1,6 +1,7 @@
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.utils.module_loading import import_string
+from django.utils.cache import add_never_cache_headers
 
 from django.core.cache import cache
 
@@ -45,6 +46,11 @@ class CachedViewSetMixin:
         if additional_viewsets:
             viewsets_to_invalidate.extend(additional_viewsets)
         self.delete_multiple_view_cache(viewsets_to_invalidate)
+
+    def dispatch(self, request, *args, **kwargs):
+        response = super().dispatch(request, *args, **kwargs)
+        add_never_cache_headers(response)
+        return response
 
     @method_decorator(cache_page(cache_timeout))
     def list(self, request, *args, **kwargs):
