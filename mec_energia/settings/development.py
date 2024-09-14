@@ -33,6 +33,16 @@ DATABASES = {
 }
 
 
+# BACKEND CACHE (MOCK CACHE)
+# ------------------------------------------------------------------------------------------------
+CACHES = {
+    "default": {
+        "BACKEND": "tests.test_mock_cache.MockCacheTest",
+        "LOCATION": "",
+    },
+}
+
+
 # MEC ENERGIA
 # ------------------------------------------------------------------------------------------------
 MEPA_FRONT_END_URL = env("FRONT_END_URL")
