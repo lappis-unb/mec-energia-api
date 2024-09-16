@@ -1,22 +1,20 @@
 from datetime import datetime
-from pandas import DataFrame
+from django.conf import settings
 from numpy import nan
-
+from pandas import DataFrame
 from rest_framework.response import Response
 
-from universities.models import ConsumerUnit
 from contracts.models import Contract
+from recommendation_commons.recommendation_result import RecommendationResult
 from tariffs.models import Tariff
 from tariffs.serializers import BlueTariffSerializer, GreenTariffSerializer
-
-from mec_energia.settings import MINIMUM_PERCENTAGE_DIFFERENCE_FOR_CONTRACT_RENOVATION
-
-from recommendation_commons.recommendation_result import RecommendationResult
+from universities.models import ConsumerUnit
 
 HEADERS_FOR_CONSUMPTION_HISTORY = [
     'date', 'peak_consumption_in_kwh', 'off_peak_consumption_in_kwh',
     'peak_measured_demand_in_kw', 'off_peak_measured_demand_in_kw',
 ]
+
 
 def _get_tariff_billing_time(tariff_label: str):
     if 'off_peak' in tariff_label:
@@ -155,7 +153,7 @@ def build_response(
         'errors': errors,
         'warnings': warnings,
         'dates': dates,
-        'should_renew_contract': costs_ratio > MINIMUM_PERCENTAGE_DIFFERENCE_FOR_CONTRACT_RENOVATION,
+        'should_renew_contract': costs_ratio > settings.MINIMUM_PERCENTAGE_DIFFERENCE_FOR_CONTRACT_RENOVATION,
         'energy_bills_count': energy_bills_count,
         'nominal_savings_percentage': nominal_savings_percentage,
         'current_contract': {

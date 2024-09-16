@@ -22,16 +22,16 @@ docker ps
 
 Devem aparecer listados os containeres da API e do banco de dados.
 
-Para se concetar ao terminal da API
+Para se conectar ao terminal da API
 
 ```sh
-docker exec -it mec-energia-api bash
+docker exec -it mepa-api bash
 ```
 
 Note que o prompt mudou e está mais ou menos assim:
 
 ```
-dev@bee825eebbb9:~/mec-energia-api$
+dev@bee825eebbb9:~/mepa-api-api$
 ```
 
 O comando abre uma conexão com o container da API e com ela você consegue
@@ -56,7 +56,7 @@ Alternativamente, você pode apenas executar um comando dentro do container
 sem abrir um terminal para o container:
 
 ```
-docker exec mec-energia-api bash -c "python -m pytest"
+docker exec mepa-api bash -c "python -m pytest"
 ```
 
 Assim que o comando terminar de executar, o prompt deve voltar ao normal da sua

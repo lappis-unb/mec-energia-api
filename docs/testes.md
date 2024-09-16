@@ -12,13 +12,13 @@ Vamos passar por alguns comandos básicos.
 Para executar **todos** os testes, dentro do container, execute simplesmente:
 
 ```sh
-docker exec mec-energia-api bash -c "python -m pytest"
+docker exec mepa-api bash -c "python -m pytest"
 ```
 
 Para executar alguns casos de teste específicos segundo uma expressão, execute:
 
 ```sh
-docker exec mec-energia-api bash -c "python -m pytest -k <expressao>
+docker exec mepa-api bash -c "python -m pytest -k <expressao>
 ```
 
 `<expressao>` é uma string que deve combinar com parte do nome de algum 
@@ -26,7 +26,7 @@ arquivo, caso ou método/função de teste. Para rodar os testes de endpoint de
 tarifa, por exemplo, você poderia usar
 
 ```sh
-docker exec mec-energia-api bash -c "python -m pytest -k tariffs_endpoint
+docker exec mepa-api bash -c "python -m pytest -k tariffs_endpoint
 ```
 
 Além disso, ainda é possível selecionar um dado de entrada específico para um caso
