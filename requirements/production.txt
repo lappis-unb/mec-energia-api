@@ -1,0 +1,7 @@
+-r common.txt
+
+gunicorn==23.0.*
+psycopg[binary]==3.2.*
+redis==5.0.*
+hiredis==3.0.*
+django-redis==5.4.*

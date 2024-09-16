@@ -1,4 +1,4 @@
-from mec_energia import settings
+from django.conf import settings
 
 class RecommendationUtils:
 

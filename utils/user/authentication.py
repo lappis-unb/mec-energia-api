@@ -1,7 +1,8 @@
 import string
 import random
 
-from mec_energia import settings
+from django.conf import settings
+
 
 def generate_random_password():
     return ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(20))
@@ -37,7 +38,7 @@ def generate_link_to_reset_password(token, user_first_name, password_status):
     else:
         raise ValueError("Invalid password_status")
     
-    endpoint_string = f'{settings.MEC_ENERGIA_URL}/{endpoint}/'
+    endpoint_string = f'{settings.MEPA_FRONT_END_URL}/{endpoint}/'
     user_first_name = f'?nome={user_first_name}'
     token_string = f'&token={token}'
     
