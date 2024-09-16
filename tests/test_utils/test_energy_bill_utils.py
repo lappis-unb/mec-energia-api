@@ -1,7 +1,8 @@
-import pytest
 from datetime import date
+
+from django.conf import settings
 from utils.energy_bill_util import EnergyBillUtils
-from mec_energia import settings
+
 
 # Testa a geração de datas em um intervalo válido
 def test_generate_dates_valid_range():
