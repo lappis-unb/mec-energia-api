@@ -1,10 +1,11 @@
 from math import inf
+
+from django.conf import settings
 from pandas import DataFrame
 from numpy import ceil as roundup
 
-
 from tariffs.models import GreenTariff
-from mec_energia.settings import NEW_RESOLUTION_MINIMUM_DEMAND
+
 
 class GreenPercentileResult:
     def __init__(self, p: 'dict[str, DataFrame]', s: DataFrame):
@@ -43,7 +44,7 @@ class GreenPercentileCalculator():
                 .consumption_history.off_peak_measured_demand_in_kw.quantile(p)
 
             # Valida com a demanda mínima para contratação
-            off_peak_demand_in_kw = NEW_RESOLUTION_MINIMUM_DEMAND if off_peak_demand_in_kw < NEW_RESOLUTION_MINIMUM_DEMAND else off_peak_demand_in_kw
+            off_peak_demand_in_kw = settings.NEW_RESOLUTION_MINIMUM_DEMAND if off_peak_demand_in_kw < settings.NEW_RESOLUTION_MINIMUM_DEMAND else off_peak_demand_in_kw
             percentiles[p_str].off_peak_demand_in_kw = [off_peak_demand_in_kw]*self.history_length
 
             # Ultrapassagem = max(0, demanda_medida - demanda_percentil)
