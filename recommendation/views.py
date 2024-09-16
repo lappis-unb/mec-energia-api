@@ -1,12 +1,13 @@
 from pandas import DataFrame
 from datetime import date
 
+from django.conf import settings
 from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
-from mec_energia.settings import MINIMUM_ENERGY_BILLS_FOR_RECOMMENDATION, IDEAL_ENERGY_BILLS_FOR_RECOMMENDATION, MINIMUM_PERCENTAGE_DIFFERENCE_FOR_CONTRACT_RENOVATION
+
 from mec_energia.error_response_manage import ErrorMensageParser, TariffsNotFoundError, NotEnoughEnergyBills, NotEnoughEnergyBillsWithAtypical, PendingBillsWarnning, ExpiredTariffWarnning
 from universities.models import ConsumerUnit
 
@@ -14,6 +15,7 @@ from recommendation_commons.static_getters import StaticGetters
 from recommendation.calculator import RecommendationCalculator
 from recommendation_commons.helpers import fill_with_pending_dates, fill_history_with_pending_dates
 from recommendation_commons.response import build_response
+
 
 class RecommendationViewSet(ViewSet):
     http_method_names = ['get']
@@ -55,13 +57,13 @@ class RecommendationViewSet(ViewSet):
 
         consumption_history_length = len(consumption_history)
         pending_num = len(pending_bills_dates) - atypical_bills_count
-        has_enough_energy_bills = consumption_history_length >= MINIMUM_ENERGY_BILLS_FOR_RECOMMENDATION
+        has_enough_energy_bills = consumption_history_length >= settings.MINIMUM_ENERGY_BILLS_FOR_RECOMMENDATION
 
         if not has_enough_energy_bills:
             errors.append(ErrorMensageParser.parse(NotEnoughEnergyBills if atypical_bills_count == 0 else NotEnoughEnergyBillsWithAtypical,
                                                    (6) if atypical_bills_count == 0 else (6 + atypical_bills_count)))
 
-        elif consumption_history_length + atypical_bills_count < IDEAL_ENERGY_BILLS_FOR_RECOMMENDATION:
+        elif consumption_history_length + atypical_bills_count < settings.IDEAL_ENERGY_BILLS_FOR_RECOMMENDATION:
             warnings.append(ErrorMensageParser.parse(PendingBillsWarnning, (pending_num, "fatura" if pending_num == 1 else "faturas")))
 
         if not is_missing_tariff and (blue.end_date < date.today() or (contract.subgroup not in ['A2', 'A3'] and green.end_date < date.today())):

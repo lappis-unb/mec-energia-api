@@ -1,13 +1,12 @@
+import decimal
 from pandas import DataFrame
 
-from mec_energia.settings import NEW_RESOLUTION_MINIMUM_DEMAND
-from recommendation_commons.headers import CONSUMPTION_HISTORY_HEADERS, CURRENT_CONTRACT_HEADERS, RECOMMENDATION_FRAME_HEADERS
-from tariffs.models import Tariff
-from universities.models import ConsumerUnit
 from contracts.models import Contract
+from tariffs.models import Tariff
+from recommendation_commons.headers import CONSUMPTION_HISTORY_HEADERS, CURRENT_CONTRACT_HEADERS, RECOMMENDATION_FRAME_HEADERS
 from recommendation_commons.recommendation_result import RecommendationResult
+from universities.models import ConsumerUnit
 
-import decimal
 
 class StaticGetters:
 

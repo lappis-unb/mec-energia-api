@@ -11,6 +11,7 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mec_energia.settings')
+environment = os.environ.get("ENVIRONMENT", "production")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", f"mec_energia.settings.{environment}")
 
 application = get_wsgi_application()
