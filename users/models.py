@@ -1,11 +1,11 @@
-from django.utils import timezone
-from django.db import models
-from django.contrib.auth.models import AbstractUser
-from django.utils.translation import gettext_lazy as _
-from django.core.exceptions import ObjectDoesNotExist
 from datetime import timedelta
 
-from mec_energia import settings
+from django.conf import settings
+from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import models
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from universities.models import ConsumerUnit, University
 
@@ -20,7 +20,7 @@ class UserTokenManager(models.Manager):
     
     def get_user_users_waiting_to_send_email(self):
         expiration_time = timezone.now() - timedelta(minutes=settings.RESEND_EMAIL_RESET_PASSWORD_TIMEOUT)
-        tokens = self.filter(invalid_tried_at__gt = expiration_time)
+        tokens = self.filter(invalid_tried_at__lte=expiration_time)
 
         return CustomUser.objects.filter(id__in = tokens.values_list('user_id', flat=True))
     
@@ -57,7 +57,7 @@ class UserToken(models.Model):
         
     @classmethod
     def get_user_by_token_and_set_invalid_tried(cls, token):
-        from .authentications import code_password_token_ok, code_password_token_expired
+        from .authentications import code_password_token_expired, code_password_token_ok
 
         try:
             user_token = UserToken.objects.get(token = token)

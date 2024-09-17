@@ -1,12 +1,13 @@
 from datetime import date
 
-from mec_energia.settings import MINIMUM_ENERGY_BILLS_FOR_RECOMMENDATION, IDEAL_ENERGY_BILLS_FOR_RECOMMENDATION
+from django.conf import settings
+from rest_framework import status
+
 from mec_energia.error_response_manage import ErrorMensageParser, TariffsNotFoundError, NotEnoughEnergyBills, NotEnoughEnergyBillsWithAtypical, PendingBillsWarnning, ExpiredTariffWarnning
-from universities.models import ConsumerUnit
 from tariffs.models import Tariff
 from recommendation_commons.static_getters import StaticGetters
+from universities.models import ConsumerUnit
 
-from rest_framework import status
 
 class Domain:
 
@@ -45,13 +46,13 @@ class Domain:
 
         self.consumption_history_length = len(self.consumption_history)
         pending_num = len(self.pending_bills_dates) - atypical_bills_count
-        has_enough_energy_bills = self.consumption_history_length >= MINIMUM_ENERGY_BILLS_FOR_RECOMMENDATION
+        has_enough_energy_bills = self.consumption_history_length >= settings.MINIMUM_ENERGY_BILLS_FOR_RECOMMENDATION
 
         if not has_enough_energy_bills:
             self.errors.append(ErrorMensageParser.parse(NotEnoughEnergyBills if atypical_bills_count == 0 else NotEnoughEnergyBillsWithAtypical,
                                                         (6) if atypical_bills_count == 0 else (6 + atypical_bills_count)))
 
-        elif self.consumption_history_length + atypical_bills_count < IDEAL_ENERGY_BILLS_FOR_RECOMMENDATION:
+        elif self.consumption_history_length + atypical_bills_count < settings.IDEAL_ENERGY_BILLS_FOR_RECOMMENDATION:
             self.warnings.append(ErrorMensageParser.parse(PendingBillsWarnning, (pending_num, "fatura" if pending_num == 1 else "faturas")))
 
         if not is_missing_tariff and (self.blue.end_date < date.today() or (self.current_contract.subgroup not in ['A2', 'A3'] and self.green.end_date < date.today())):
