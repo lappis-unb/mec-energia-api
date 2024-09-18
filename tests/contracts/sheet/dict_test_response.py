@@ -10,7 +10,7 @@ invalid_date_format_dict = {
                     [
                         8,
                         'O mês deve ser uma data nos formatos "mm/aaaa", '
-                        '"mmm/aaaa" como "abr/2024", ou "dd/mm/aaaa"',
+                        '"mmm/aaaa" como "abr/2024"',
                    ]
                    ],
                    'value': '04-2024',
@@ -240,7 +240,7 @@ invalid_number_dict_xlsx = {
                        [
                            8,
                            'O mês deve ser uma data nos formatos "mm/aaaa", '
-                           '"mmm/aaaa" como "abr/2024", ou "dd/mm/aaaa"',
+                           '"mmm/aaaa" como "abr/2024"',
                        ],
                    ],
                    'value': '05-2024',
@@ -359,7 +359,7 @@ invalid_number_dict_csv = {
                        [
                            8,
                            'O mês deve ser uma data nos formatos "mm/aaaa", '
-                           '"mmm/aaaa" como "abr/2024", ou "dd/mm/aaaa"',
+                           '"mmm/aaaa" como "abr/2024"',
                        ],
                    ],
                    'value': '05-2024',
