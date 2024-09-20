@@ -291,10 +291,9 @@ class Tariff(models.Model):
     power_generation_tusd_in_reais_per_kw = models.DecimalField(
         decimal_places=2,
         max_digits=6,
-        null=True,
-        blank=True,
+        default=0
     )
-
+    
     def is_blue(self) -> bool:
         return self.flag == Tariff.BLUE
     
