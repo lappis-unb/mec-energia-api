@@ -1,10 +1,6 @@
 import pytest
-from utils.user.authentication import (
-    generate_random_password,
-    create_token_response,
-    create_valid_token_response,
-    generate_link_to_reset_password,
-)
+from utils.user.authentication import generate_link_to_reset_password
+
 from mec_energia import settings
 
 def test_generate_link_to_reset_password_first_access(monkeypatch):
