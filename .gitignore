@@ -9,6 +9,8 @@ __pycache__/
 # Distribution / packaging
 .Python
 build/
+staticfiles/
+mediafiles/
 develop-eggs/
 dist/
 downloads/
@@ -165,6 +167,7 @@ cython_debug/
 
 .vscode/
 media/
+.draft/
 db.sqlite3
 venv/
 .env

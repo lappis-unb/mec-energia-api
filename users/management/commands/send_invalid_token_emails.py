@@ -1,4 +1,5 @@
-from django.core.management.base import BaseCommand, CommandParser
+from datetime import datetime
+from django.core.management.base import BaseCommand
 
 from users.models import UserToken, CustomUser, UniversityUser
 from users.authentications import Password
@@ -7,12 +8,9 @@ class Command(BaseCommand):
     help = "Send email for all invalid trieds tokens"
 
     def handle(self, *args, **options) -> None:
-        users = UserToken.objects.get_user_users_waiting_to_send_email()
+        print('Envio de email para tokens inválidos está funcionando ||', datetime.now())
 
-        if not users:
-            print('Nenhum usuário para mandar email', flush = True)
-        else:
-            print('--------------------------------')
+        users = UserToken.objects.get_user_users_waiting_to_send_email()
             
         for user in users:
             if user.account_password_status == 'first_access':

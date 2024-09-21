@@ -1,16 +1,14 @@
-from mec_energia import settings
-
-MEC_ENERGIA_URL = settings.MEC_ENERGIA_URL
+from django.conf import settings
 
 def template_email_first_access(user_name, university_acronym, link_reset_password_page):
-    title = 'Cadastro Universidades Sustentáveis'
+    title = 'Cadastrado na MEPA - Monitoramento de Energia em Plataforma Aberta'
 
     message = f'''
         == Esta é uma mensagem automática, não é necessário responder ==
 
         <p>Olá {user_name},</p>
         
-        <p>Seu cadastrado foi criado no sistema <a href="{MEC_ENERGIA_URL}">Universidades Sustentáveis</a> para análise do contrato de fornecimento de energia da(o) {university_acronym}.</p>
+        <p>Seu cadastrado foi criado na <a href="{settings.MEPA_FRONT_END_URL}">MEPA - Monitoramento de Energia em Plataforma Aberta</a> para análise do contrato de fornecimento de energia da(o) {university_acronym}.</p>
 
         Para acessar o sistema, cadastre uma senha clicando no link abaixo:<br>
         <a href="{link_reset_password_page}">{link_reset_password_page}</a>
@@ -25,14 +23,14 @@ def template_email_first_access(user_name, university_acronym, link_reset_passwo
     return (title, message)
 
 def template_email_recovery_password(user_name, link_reset_password_page):
-    title = 'Redefinição de senha - Universidades Sustentáveis'
+    title = 'Redefinição de senha -> MEPA - Monitoramento de Energia em Plataforma Aberta'
 
     message = f'''
         == Esta é uma mensagem automática, não é necessário responder ==
 
         <p>Olá {user_name},</p>
 
-        <p>Você solicitou a redefinição da sua senha de acesso ao sistema <a href="{MEC_ENERGIA_URL}">Universidades Sustentáveis</a>.</p>
+        <p>Você solicitou a redefinição da sua senha de acesso à <a href="{settings.MEPA_FRONT_END_URL}">MEPA - Monitoramento de Energia em Plataforma Aberta</a>.</p>
 
         Para criar uma nova senha, clique no link abaixo:<br>
         <a href="{link_reset_password_page}">{link_reset_password_page}</a>
@@ -47,14 +45,14 @@ def template_email_recovery_password(user_name, link_reset_password_page):
     return (title, message)
 
 def template_email_recovery_password_by_admin(user_name, link_reset_password_page):
-    title = 'Redefinição de senha - Universidades Sustentáveis'
+    title = 'Redefinição de senha -> MEPA - Monitoramento de Energia em Plataforma Aberta'
 
     message = f'''
         == Esta é uma mensagem automática, não é necessário responder ==
 
         <p>Olá {user_name},</p>
 
-        <p>A redefinição da sua senha de acesso ao sistema <a href="{MEC_ENERGIA_URL}">Universidades Sustentáveis</a> foi realizada pela administração do sistema. Sua senha atual foi desativada.</p>
+        <p>A redefinição da sua senha de acesso à <a href="{settings.MEPA_FRONT_END_URL}">MEPA - Monitoramento de Energia em Plataforma Aberta</a> foi realizada pela administração da plataforma. Sua senha atual foi desativada.</p>
 
         Para criar uma nova senha, clique no link abaixo:<br>
         <a href="{link_reset_password_page}">{link_reset_password_page}</a>

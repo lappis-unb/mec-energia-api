@@ -8,14 +8,14 @@ O seed de demonstração popula o banco com dados da UNB e da
 UFMG.
 
 Os comandos a seguir também devem ser executados dentro do container da api 
-(mec-energia-api).
+(mepa-api).
 
 
 ## Comandos
 
 Exemplo:
 ```sh
-docker exec mec-energia-api bash -c "./scripts/seed.sh"
+docker exec mepa-api bash -c "./scripts/seed.sh"
 ```
 
 Super User + Seed Demo:

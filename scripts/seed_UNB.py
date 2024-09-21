@@ -111,7 +111,7 @@ green = {
 a3_start_date = date(2022,10,2)
 a3_end_date   = date(2023,10,5)
 a4_start_date = date(2023,6,17)
-a4_end_date   = date(2023,5,12)
+a4_end_date   = date(2024,5,12)
 
 Tariff.objects.bulk_create([
     Tariff(subgroup='A3', distributor=distributor_neoenergia, flag=Tariff.BLUE, **blue, start_date=a3_start_date, end_date=a3_end_date),

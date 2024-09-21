@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
 from django.forms.models import model_to_dict
 
@@ -14,7 +14,7 @@ from utils.subgroup_util import Subgroup
 
 class University(models.Model):
     name = models.CharField(
-        max_length=50,
+        max_length=100,
         blank=False,
         null=False,
         unique=True,
@@ -50,15 +50,13 @@ class University(models.Model):
 
 class ConsumerUnit(models.Model):
     name = models.CharField(
-        max_length=50,
-        unique=True,
+        max_length=100,
         verbose_name=_('Nome'),
         help_text=_('Nome da Unidade Consumidora. Ex: Darcy Ribeiro')
     )
 
     code = models.CharField(
         max_length=30,
-        unique=True,
         verbose_name=_('Código da Unidade Consumidora'),
         help_text=_(
             'Cheque a conta de luz para obter o código da Unidade Consumidora. Insira apenas números')
@@ -81,7 +79,7 @@ class ConsumerUnit(models.Model):
 
     total_installed_power = models.DecimalField(
         decimal_places=2,
-        max_digits=6,
+        max_digits=7,
         null=True,
         blank=True, 
         help_text=_(
@@ -93,12 +91,15 @@ class ConsumerUnit(models.Model):
         auto_now_add=True
     )
 
+    class Meta:
+        unique_together = ['university', 'name', 'code']
+
     @property
     def current_contract(self) -> Contract:
         return self.contract_set.all().order_by('start_date').last()
 
     @property
-    def oldest_contract(self):
+    def oldest_contract(self) -> Contract:
         return self.contract_set.all().order_by('start_date').first()
     
     @property
@@ -110,9 +111,6 @@ class ConsumerUnit(models.Model):
 
     @property
     def date(self):
-        if not self.current_contract:
-            return 'Unidade Consumidora sem Contrato'
-
         return self.oldest_contract.start_date
 
     @property
@@ -127,18 +125,7 @@ class ConsumerUnit(models.Model):
 
     @property
     def pending_energy_bills_number(self):
-        if not self.current_contract:
-            return 'Unidade Consumidora sem Contrato'
-
-        pending_bills_number = 0
-        energy_bills = Recommendation.get_energy_bills_for_recommendation(
-            self.id)
-
-        for energy_bill in energy_bills:
-            if energy_bill['energy_bill'] == None:
-                pending_bills_number += 1
-
-        return pending_bills_number
+        return len(self.get_energy_bills_pending())
 
     @classmethod
     def check_insert_is_favorite_on_consumer_units(cls, consumer_unit_list, user_id):
@@ -162,6 +149,8 @@ class ConsumerUnit(models.Model):
         created_consumer_unit = None
 
         try:
+            Contract.check_is_valid_peak_demand_values(data_contract['peak_contracted_demand_in_kw'], data_contract['off_peak_contracted_demand_in_kw'])
+            
             created_consumer_unit = ConsumerUnit(
                 university_id=data_consumer_unit['university'],
                 name=data_consumer_unit['name'],
@@ -190,18 +179,21 @@ class ConsumerUnit(models.Model):
 
     @classmethod
     def edit_consumer_unit_and_contract(cls, data_consumer_unit, data_contract):
+        try:
+            Contract.check_is_valid_peak_demand_values(data_contract['peak_contracted_demand_in_kw'], data_contract['off_peak_contracted_demand_in_kw'])
 
-        try:            
-            consumer_unit = ConsumerUnit.objects.filter(id=data_consumer_unit['consumer_unit_id']).update(
-                name = data_consumer_unit['name'],
-                code = data_consumer_unit['code'],
-                is_active = data_consumer_unit['is_active'],
-                total_installed_power = data_consumer_unit["total_installed_power"]
-            )
+            consumer_unit = ConsumerUnit.objects.get(id=data_consumer_unit['consumer_unit_id'])
 
             if not consumer_unit:
                 raise Exception('Consumer Unit not exist')
             
+            consumer_unit.name = data_consumer_unit['name']
+            consumer_unit.code = data_consumer_unit['code']
+            consumer_unit.is_active = data_consumer_unit['is_active']
+            consumer_unit.total_installed_power = data_consumer_unit['total_installed_power']
+
+            consumer_unit.save()
+ 
             contract = Contract.objects.get(id=data_contract['contract_id'])
 
             if not contract:
@@ -229,6 +221,8 @@ class ConsumerUnit(models.Model):
     @classmethod
     def edit_consumer_unit_code_and_create_contract(cls, data_consumer_unit, data_contract):
         try:
+            Contract.check_is_valid_peak_demand_values(data_contract['peak_contracted_demand_in_kw'], data_contract['off_peak_contracted_demand_in_kw'])
+            
             consumer_unit = ConsumerUnit.objects.filter(id=data_consumer_unit['consumer_unit_id']).update(
                 code=data_consumer_unit['code'],
             )
@@ -249,6 +243,12 @@ class ConsumerUnit(models.Model):
         created_contract.save()
 
         return consumer_unit, created_contract
+    
+    def check_if_consumer_unit_has_contract(self):
+        try:
+            contract = self.current_contract
+        except Exception:
+            raise Exception('Unidade Consumidora sem Contrato ou Contrato com erro')
 
     def get_energy_bills_by_year(self, year):
         if year < self.date.year or year > date.today().year:
@@ -271,29 +271,23 @@ class ConsumerUnit(models.Model):
         return list(energy_bills_dates)
 
     def get_energy_bills_pending(self):
-        if not self.current_contract:
-            return 'Unidade Consumidora sem Contrato'
-
         energy_bills_pending = []
 
         energy_bills = self.get_energy_bills_for_recommendation()
 
         for energy_bill in energy_bills:
-            if energy_bill['energy_bill'] == None:
-                energy_bills_pending.append(energy_bill)
+            energy_bill_date = date(energy_bill['year'], energy_bill['month'], 1)
+
+            if energy_bill_date >= self.oldest_contract.start_date:
+                if energy_bill['energy_bill'] == None:
+                    energy_bills_pending.append(energy_bill)
 
         return list(energy_bills_pending)
 
     def get_energy_bills_for_recommendation(self):
-        if not self.current_contract:
-            return 'Unidade Consumidora sem Contrato'
-
         return Recommendation.get_energy_bills_for_recommendation(self.id)
 
     def get_all_energy_bills(self):
-        if not self.current_contract:
-            return 'Unidade Consumidora sem Contrato'
-
         energy_bills = Recommendation.get_all_energy_bills_by_consumer_unit(
             self.id, self.date)
 

@@ -72,19 +72,13 @@ class ListSubgroupsSerializerForDocs(serializers.Serializer):
 class EnergyBillListObjectAttributesSerializerForDocs(serializers.Serializer):
     id = serializers.IntegerField()
     date = serializers.DateField()
-    invoice_in_reais = serializers.DecimalField(
-        decimal_places=2, max_digits=10)
+    invoice_in_reais = serializers.DecimalField(decimal_places=2, max_digits=10)
     is_atypical = serializers.BooleanField()
-    peak_consumption_in_kwh = serializers.DecimalField(
-        decimal_places=2, max_digits=10)
-    off_peak_consumption_in_kwh = serializers.DecimalField(
-        decimal_places=2, max_digits=10)
-    off_peak_contracted_demand_in_kw = serializers.DecimalField(
-        decimal_places=2, max_digits=10)
-    peak_measured_demand_in_kw = serializers.DecimalField(
-        decimal_places=2, max_digits=10)
-    off_peak_measured_demand_in_kw = serializers.DecimalField(
-        decimal_places=2, max_digits=10)
+    peak_consumption_in_kwh = serializers.DecimalField(decimal_places=2, max_digits=9)
+    off_peak_consumption_in_kwh = serializers.DecimalField(decimal_places=2, max_digits=9)
+    off_peak_contracted_demand_in_kw = serializers.DecimalField(decimal_places=2, max_digits=10)
+    peak_measured_demand_in_kw = serializers.DecimalField(decimal_places=2, max_digits=9)
+    off_peak_measured_demand_in_kw = serializers.DecimalField(decimal_places=2, max_digits=9)
     energy_bill_file = serializers.FileField()
 
 

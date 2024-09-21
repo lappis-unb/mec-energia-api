@@ -9,6 +9,12 @@ import datetime
 import math
 from decimal import Decimal
 
+month_translation = {
+    'January': 'Janeiro', 'February': 'Fevereiro', 'March': 'Março', 'April': 'Abril',
+    'May': 'Maio', 'June': 'Junho', 'July': 'Julho', 'August': 'Agosto',
+    'September': 'Setembro', 'October': 'Outubro', 'November': 'Novembro', 'December': 'Dezembro'
+}
+
 class ContractServices:  
     def get_file_errors(self, csv_reader, consumer_unit_id): 
         energy_bill_data = []
@@ -50,23 +56,27 @@ class ContractServices:
         elif models.EnergyBill.check_energy_bill_month_year(consumer_unit_id, date):
             errors['date'].append(AlreadyHasEnergyBill)
 
-        elif not models.EnergyBill.check_energy_bill_covered_by_contract(
-            consumer_unit_id, date):
-            errors["date"].append(DateNotCoverByContractError)
+        else:
+            covered, contract_date = models.EnergyBill.check_energy_bill_covered_by_contract(consumer_unit_id, date)
+            if not covered:
+                month_name = contract_date.strftime("%B")
+                month_name_pt = month_translation[month_name]
+                contract_date_str = f"{month_name_pt} de {contract_date.year}"
+                dynamic_error_message = ErrorMensageParser.parse(DateNotCoverByContractError, (contract_date_str))
+                errors["date"].append(dynamic_error_message)
 
-        for field, max_length in [
-            ('invoice_in_reais', 10),
-            ('peak_consumption_in_kwh', 6),
-            ('off_peak_consumption_in_kwh', 6),
-            ('peak_measured_demand_in_kw', 6),
-            ('off_peak_measured_demand_in_kw', 6),
+        for field, max_value in [
+            ('invoice_in_reais', 99999999.99),
+            ('peak_consumption_in_kwh', 9999999.99),
+            ('off_peak_consumption_in_kwh', 9999999.99),
+            ('peak_measured_demand_in_kw', 9999999.99),
+            ('off_peak_measured_demand_in_kw', 9999999.99),
         ]:
             value = row.get(field, "")
-            if(isinstance(value, str)):
+            if isinstance(value, str):
                 try: 
-                    value = value.replace(',', '.')
-                    value = float(value)
-                    if len(str(value)) > max_length:
+                    value = float(value.replace(',', '.'))
+                    if value > max_value:
                         errors[field].append(EnergyBillValueError if field=='invoice_in_reais' else ValueMaxError)
                 except: 
                     row[field] = value
@@ -74,8 +84,13 @@ class ContractServices:
                         errors[field].append(EnergyBillValueError if field=='invoice_in_reais' else ValueMaxError)
                         continue
 
-            if(math.isnan(value)):
+            elif math.isnan(value):
                 row[field] = ""
+
+            else: 
+                if value > max_value:
+                    row[field] = value
+                    errors[field].append(EnergyBillValueError if field=='invoice_in_reais' else ValueMaxError)            
 
         if row.get('invoice_in_reais') == '':
             errors['invoice_in_reais'].append(EnergyBillValueError)

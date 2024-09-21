@@ -172,7 +172,7 @@ class Password():
             
             send_email_reset_password_by_admin(user.first_name, user.email, link)
         except Exception as error:
-            raise Exception('Send email reset password: ' + str(error))
+            raise Exception('Send email reset password by admin: ' + str(error))
 
     def send_email_reset_password(email):
         try:
@@ -185,6 +185,8 @@ class Password():
             link = Password.generate_link_to_reset_password(user, token, 'user_reset')
             
             send_email_reset_password(user.first_name, user.email, link)
+        except CustomUser.DoesNotExist:
+            pass
         except Exception as error:
             raise Exception('Send email reset password: ' + str(error))
 
