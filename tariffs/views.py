@@ -73,7 +73,7 @@ class DistributorViewSet(CachedViewSetMixin, ModelViewSet):
     @swagger_auto_schema(query_serializer=DistributorListParamsSerializer)
     @method_decorator(cache_page(cache_timeout, key_prefix=cache_key_prefix))
     def list(self, request: Request, *args, **kwargs):
-        user_types_with_permission = RequestsPermissions.university_user_permissions
+        user_types_with_permission = RequestsPermissions.university_user_permissions + RequestsPermissions.university_spectator_user_permissions
 
         params_serializer = DistributorListParamsSerializer(data=request.GET)
         if not params_serializer.is_valid():
@@ -106,7 +106,7 @@ class DistributorViewSet(CachedViewSetMixin, ModelViewSet):
 
     @method_decorator(cache_page(cache_timeout, key_prefix=cache_key_prefix))
     def retrieve(self, request, pk=None):
-        user_types_with_permission = RequestsPermissions.university_user_permissions
+        user_types_with_permission = RequestsPermissions.university_user_permissions + RequestsPermissions.university_spectator_user_permissions
         distributor = self.get_object()
 
         try:
@@ -123,7 +123,7 @@ class DistributorViewSet(CachedViewSetMixin, ModelViewSet):
     @method_decorator(cache_page(cache_timeout, key_prefix=cache_key_prefix))
     @action(detail=True, methods=["get"], url_path="consumer-units-by-subgroup")
     def consumer_units_separated_by_subgroup(self, request: Request, pk=None):
-        user_types_with_permission = RequestsPermissions.university_user_permissions
+        user_types_with_permission = RequestsPermissions.university_user_permissions + RequestsPermissions.university_spectator_user_permissions
         distributor: Distributor = self.get_object()
 
         try:
@@ -143,7 +143,7 @@ class DistributorViewSet(CachedViewSetMixin, ModelViewSet):
     @method_decorator(cache_page(cache_timeout, key_prefix=cache_key_prefix))
     @action(detail=True, methods=["get"], url_path="get-tariffs")
     def get_blue_and_green_tariffs(self, request: Request, pk=None):
-        user_types_with_permission = RequestsPermissions.default_users_permissions
+        user_types_with_permission = RequestsPermissions.default_users_permissions + RequestsPermissions.university_spectator_user_permissions
         distributor: Distributor = self.get_object()
 
         params_serializer = GetTariffsOfDistributorParamsSerializer(data=request.GET)

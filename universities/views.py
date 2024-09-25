@@ -48,7 +48,7 @@ class UniversityViewSet(CachedViewSetMixin, ModelViewSet):
 
     @method_decorator(cache_page(cache_timeout, key_prefix=cache_key_prefix))
     def list(self, request):
-        user_types_with_permission = RequestsPermissions.super_user_permissions
+        user_types_with_permission = RequestsPermissions.super_user_permissions + RequestsPermissions.university_spectator_user_permissions
 
         try:
             RequestsPermissions.check_request_permissions(request.user, user_types_with_permission, None)
@@ -62,7 +62,7 @@ class UniversityViewSet(CachedViewSetMixin, ModelViewSet):
 
     @method_decorator(cache_page(cache_timeout, key_prefix=cache_key_prefix))
     def retrieve(self, request, *args, **kwargs):
-        user_types_with_permission = RequestsPermissions.default_users_permissions
+        user_types_with_permission = RequestsPermissions.default_users_permissions + RequestsPermissions.university_spectator_user_permissions
         university = self.get_object()
 
         try:
@@ -114,7 +114,7 @@ class ConsumerUnitViewSet(CachedViewSetMixin, ModelViewSet):
     )
     @method_decorator(cache_page(cache_timeout, key_prefix=cache_key_prefix))
     def list(self, request: Request, *args, **kwargs):
-        user_types_with_permission = RequestsPermissions.default_users_permissions
+        user_types_with_permission = RequestsPermissions.default_users_permissions + RequestsPermissions.university_spectator_user_permissions
 
         params_serializer = serializers.ConsumerUnitParamsSerializer(data=request.GET)
         if not params_serializer.is_valid():
@@ -152,7 +152,7 @@ class ConsumerUnitViewSet(CachedViewSetMixin, ModelViewSet):
 
     @method_decorator(cache_page(cache_timeout, key_prefix=cache_key_prefix))
     def retrieve(self, request, pk=None):
-        user_types_with_permission = RequestsPermissions.default_users_permissions
+        user_types_with_permission = RequestsPermissions.default_users_permissions + RequestsPermissions.university_spectator_user_permissions
         queryset = self.get_object()
 
         university_user: UniversityUser = UniversityUser.objects.get(id=request.user.id)

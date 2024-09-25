@@ -24,6 +24,10 @@ class RequestsPermissions:
         models.CustomUser.university_admin_user_type,
     ]
 
+    university_spectator_user_permissions = [
+        models.CustomUser.university_spectator_user_type,
+    ]
+
     university_user_permissions = [
         models.CustomUser.university_admin_user_type,
         models.CustomUser.university_user_type,
