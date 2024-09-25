@@ -46,6 +46,44 @@ class ContractServices:
             
         return energy_bill_data
 
+    def error_append(self, field, errors):
+        errors[field].append(EnergyBillValueError if field=='invoice_in_reais' else ValueMaxError)
+
+    def check_value(self, value, max_value, row, field, errors):
+        try: 
+            value = float(value.replace(',', '.'))
+            if value > max_value:
+                self.error_append(field, errors)
+        except: 
+            row[field] = value
+            if(value != ""):
+                self.error_append(field, errors)
+
+    def get_max_values(self):
+        return [
+            ('invoice_in_reais', 99999999.99),
+            ('peak_consumption_in_kwh', 9999999.99),
+            ('off_peak_consumption_in_kwh', 9999999.99),
+            ('peak_measured_demand_in_kw', 9999999.99),
+            ('off_peak_measured_demand_in_kw', 9999999.99),
+        ]
+
+    def error_detection(self, row, errors):
+        for field, max_value in self.get_max_values():
+            value = row.get(field, "")
+            if isinstance(value, str):
+                self.check_value(value, max_value, row, field, errors)
+            
+            elif math.isnan(value):
+                row[field] = ""
+
+            elif value > max_value:
+                row[field] = value
+                self.error_append(field, errors)
+
+        if row.get('invoice_in_reais') == '':
+            errors['invoice_in_reais'].append(EnergyBillValueError)
+            
 
     def validate_csv_row(self, row, consumer_unit_id):
         errors = defaultdict(list)
@@ -65,36 +103,7 @@ class ContractServices:
                 dynamic_error_message = ErrorMensageParser.parse(DateNotCoverByContractError, (contract_date_str))
                 errors["date"].append(dynamic_error_message)
 
-        for field, max_value in [
-            ('invoice_in_reais', 99999999.99),
-            ('peak_consumption_in_kwh', 9999999.99),
-            ('off_peak_consumption_in_kwh', 9999999.99),
-            ('peak_measured_demand_in_kw', 9999999.99),
-            ('off_peak_measured_demand_in_kw', 9999999.99),
-        ]:
-            value = row.get(field, "")
-            if isinstance(value, str):
-                try: 
-                    value = float(value.replace(',', '.'))
-                    if value > max_value:
-                        errors[field].append(EnergyBillValueError if field=='invoice_in_reais' else ValueMaxError)
-                except: 
-                    row[field] = value
-                    if(value != ""):
-                        errors[field].append(EnergyBillValueError if field=='invoice_in_reais' else ValueMaxError)
-                        continue
-
-            elif math.isnan(value):
-                row[field] = ""
-
-            else: 
-                if value > max_value:
-                    row[field] = value
-                    errors[field].append(EnergyBillValueError if field=='invoice_in_reais' else ValueMaxError)            
-
-        if row.get('invoice_in_reais') == '':
-            errors['invoice_in_reais'].append(EnergyBillValueError)
-
+        self.error_detection(row, errors)
         return errors, date
 
     def process_csv_row(self, row, index, consumer_unit_id):
