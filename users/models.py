@@ -87,22 +87,26 @@ class CustomUser(AbstractUser):
     ### User types
     super_user_type = 'super_user'
     university_admin_user_type = 'university_admin'
+    university_spectator_user_type = 'university_spectator'
     university_user_type = 'university_user'
 
     all_user_types = [
         super_user_type,
         university_admin_user_type,
+        university_spectator_user_type,
         university_user_type
     ]
 
     university_user_types = [
         university_admin_user_type,
+        university_spectator_user_type,
         university_user_type
     ]
 
     user_types = (
         (super_user_type, 'super_user'),
         (university_admin_user_type, 'university_admin'),
+        (university_spectator_user_type, 'university_spectator'),
         (university_user_type,'university_user'),
     )
 
@@ -205,6 +209,7 @@ class CustomUser(AbstractUser):
 
 class UniversityUser(CustomUser):
     university_admin_user_type = CustomUser.university_admin_user_type
+    university_spectator_user_type = CustomUser.university_spectator_user_type
     university_user_type = CustomUser.university_user_type
 
     favorite_consumer_units = models.ManyToManyField(ConsumerUnit, blank=True)

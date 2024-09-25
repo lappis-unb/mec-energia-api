@@ -67,7 +67,7 @@ class ContractViewSet(CachedViewSetMixin, ModelViewSet):
     @swagger_auto_schema(query_serializer=serializers.ContractListParamsSerializer)
     @method_decorator(cache_page(cache_timeout, key_prefix=cache_key_prefix))
     def list(self, request: Request, *args, **kwargs):
-        user_types_with_permission = RequestsPermissions.default_users_permissions
+        user_types_with_permission = RequestsPermissions.default_users_permissions + RequestsPermissions.university_spectator_user_permissions
 
         params_serializer = serializers.ContractListParamsSerializer(data=request.GET)
         if not params_serializer.is_valid():
@@ -94,7 +94,7 @@ class ContractViewSet(CachedViewSetMixin, ModelViewSet):
 
     @method_decorator(cache_page(cache_timeout, key_prefix=cache_key_prefix))
     def retrieve(self, request, pk=None):
-        user_types_with_permission = RequestsPermissions.default_users_permissions
+        user_types_with_permission = RequestsPermissions.default_users_permissions + RequestsPermissions.university_spectator_user_permissions
         contract = self.get_object()
 
         university_id = contract.consumer_unit.university.id
@@ -124,7 +124,7 @@ class ContractViewSet(CachedViewSetMixin, ModelViewSet):
     @method_decorator(cache_page(cache_timeout, key_prefix=cache_key_prefix))
     @action(detail=False, methods=["get"], url_path="get-current-contract-of-consumer-unit")
     def get_current_contract_of_consumer_unit(self, request: Request, pk=None):
-        user_types_with_permission = RequestsPermissions.university_user_permissions
+        user_types_with_permission = RequestsPermissions.university_user_permissions + RequestsPermissions.university_spectator_user_permissions
 
         params_serializer = serializers.ContractListParamsSerializer(data=request.GET)
         if not params_serializer.is_valid():
@@ -188,7 +188,7 @@ class EnergyBillViewSet(CachedViewSetMixin, ModelViewSet):
     )
     @method_decorator(cache_page(cache_timeout, key_prefix=cache_key_prefix))
     def list(self, request: Request, *args, **kwargs):
-        user_types_with_permission = RequestsPermissions.default_users_permissions
+        user_types_with_permission = RequestsPermissions.default_users_permissions + RequestsPermissions.university_spectator_user_permissions
 
         params_serializer = serializers.EnergyBillListParamsSerializer(data=request.GET)
         if not params_serializer.is_valid():
