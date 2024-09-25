@@ -5,8 +5,6 @@ import io
 from django.conf import settings
 from pathlib import Path
 
-import test
-
 
 @pytest.fixture
 def setup_logger():

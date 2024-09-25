@@ -21,7 +21,6 @@ CORS_ALLOW_ALL_ORIGINS = True
 LOG_LEVEL = env("LOG_LEVEL", default="DEBUG")
 LOGGING['loggers']['apps']['level'] = LOG_LEVEL
 
-print(f"LOGGING: {LOGGING}")
 
 
 # DATABASES
